@@ -1,5 +1,6 @@
 import os
 import discord
+from utils.bot_contexts import BotApplicationContext
 
 class EnediaBot(discord.Bot):
     async def on_ready(self):
@@ -11,6 +12,10 @@ class EnediaBot(discord.Bot):
         
         await self.change_presence(status=discord.Status.idle)
 
+    async def get_application_context(self, interaction, cls = BotApplicationContext):
+        return await super().get_application_context(interaction, cls=cls)
+    
+
     def load_cogs(self, path: str):
         for cog_file in self.get_cogs_file(path):
             if "debug" in cog_file and not References.DEBUG_MODE: continue
@@ -20,7 +25,6 @@ class EnediaBot(discord.Bot):
         for cog_file in self.get_cogs_file(path):
             if "debug" in cog_file and not References.DEBUG_MODE: continue
             self.reload_extension(cog_file.replace("/", ".")[:-3])
-    
     
     def get_cogs_file(self, path: str) -> list:
         cogs_file = []
