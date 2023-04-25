@@ -1,4 +1,5 @@
 from discord import *
+from discord.abc import GuildChannel
 from data_class import MemberCounterData
 
 class MemberCounterCog(Cog):
@@ -7,14 +8,17 @@ class MemberCounterCog(Cog):
     
     async def update_channels(self, guilds: list):
         for guild in guilds:
-            guild_id = guild.id
-            member_counter = MemberCounterData(guild_id)
-            
-            for channel_id, channel_name in member_counter.channels.items():
-                channel = guild.get_channel(int(channel_id))
-                if channel is None:
-                    continue
+            member_counter = MemberCounterData(guild)
+            await member_counter.update_channels()
 
+    @Cog.listener()
+    async def on_member_join(self, member):
+        await self.update_channels([member.guild])
+
+    @Cog.listener()
+    async def on_raw_member_remove(self, payload):
+        guild = self.bot.get_guild(payload.guild_id)
+        await self.update_channels([guild])
 
     @Cog.listener()
     async def on_ready(self):
@@ -22,12 +26,13 @@ class MemberCounterCog(Cog):
 
     @Cog.listener()
     async def on_presence_update(self, before, after):
-        pass
+        guilds = after.mutual_guilds
+        await self.update_channels(guilds)
     
     member_counter = SlashCommandGroup("member_counter", default_member_permissions=Permissions(administrator=True), guild_only=True)
 
     @member_counter.command(name="link")
-    @option("channel", type=VoiceChannel)
+    @option("channel", type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
     @option("name", type=str)
     async def member_counter_link(self, ctx, channel: channel, name: str):
         ctx.member_counter.add_channel(channel, name)
