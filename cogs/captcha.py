@@ -11,12 +11,33 @@ class CaptchaCog(Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    def generate_captcha_text(self, size: int = 5):
+    def generate_captcha_text(self, size) -> str:
+        """Generate a random sequence of `size` characters
+        
+        Parameters
+        ----------
+            size: int
+                size of the character string
+        
+        Returns
+        -------
+            str
+        """
         chars = digits + ascii_uppercase
-
         return "".join([choice(chars) for _ in range(size)])
 
-    def generate_captcha_image(self, text):
+    def generate_captcha_image(self, text: str):
+        """Generate a captcha image
+        
+        Parameters
+        ----------
+            text: str
+                text on the image
+        
+        Returns
+        -------
+            PIL.Image
+        """
         image_captcha = ImageCaptcha(width = 300, height = 100)
         return image_captcha.generate_image(text)
 
@@ -28,7 +49,7 @@ class CaptchaCog(Cog):
         if not captcha_config.enabled: # The captcha is disabled
             return
 
-        channel = captcha_config.get_channel() or guild.system_channel
+        channel = captcha_config.get_channel()
         if channel is None: # The channel doesn't exist
             return
 
@@ -38,7 +59,7 @@ class CaptchaCog(Cog):
             await member.add_roles(unverified_role)
 
         # Send image
-        text = self.generate_captcha_text()
+        text = self.generate_captcha_text(captcha_config.size)
         img = self.generate_captcha_image(text)
         with io.BytesIO() as image_binary:
             img.save(image_binary, "PNG")
@@ -47,6 +68,7 @@ class CaptchaCog(Cog):
             file = File(image_binary, filename="captcha.png")
             msg = await channel.send(captcha_config.message.format(member=member), file=file)
 
+            # Add member in the members captcha data
             member_captcha = MemberCaptcha()
             member_captcha.text = text
             member_captcha.message_id = msg.id
@@ -60,18 +82,18 @@ class CaptchaCog(Cog):
         channel = message.channel
         captcha_channel = captcha_config.get_channel()
 
-        if channel.id != captcha_channel.id:
+        if channel.id != captcha_channel.id: # Message sent on another channel
             return
         
         author_captcha = captcha_config.get_member_captcha(message.author.id)
-        if author_captcha is None: # Author has no captcha
+        if author_captcha is None: # Author has no captcha data
             return
 
         # Remove author's message
         await message.delete()
 
         if message.content == author_captcha.text: # Correct
-            # Clear author from unverified members
+            # Clear author captcha data
             captcha_config.remove_member_captcha(message.author.id)
             # Delete the captcha message if it exists
             if captcha_msg := self.bot.get_message(author_captcha.message_id):
@@ -100,10 +122,20 @@ class CaptchaCog(Cog):
     async def captcha_disable(self, ctx):
         ctx.captcha_config.disable()
 
+    @c_set.command(name="message")
+    @option("message", type=str, max_length=2048)
+    async def set_message(self, ctx, message: str):
+        ctx.captcha_config.set_message(message)
+
     @c_set.command(name="channel")
     @option("channel", type=GuildChannel, channel_types=[ChannelType.text])
     async def set_channel(self, ctx, channel: TextChannel):
         ctx.captcha_config.set_channel(channel)
+
+    @c_set.command(name="size")
+    @option("size", type=int)
+    async def set_size(self, ctx, size: int):
+        ctx.captcha_disable.set_size(size)
 
     @c_set.command(name="unverified_role")
     @option("role", type=Role)

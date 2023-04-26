@@ -142,7 +142,8 @@ class CaptchaConfigData(Saveable):
 
         self.enabled = False
         
-        self.message = "{member.mention} écrit dans le salon ce qu'il y a d'écrit sur l'image pour accéder aux reste du server"
+        self.size = 5
+        self.message = "{member.mention} écrit le mot affiché sur l'image. Le mot est consitué de 5 caractères, toutes les lettres sont en majuscules"
 
         self.verified_role_id = None
         self.unverified_role_id = self._guild.default_role.id # @everyone
@@ -154,30 +155,20 @@ class CaptchaConfigData(Saveable):
         super().__init__(References.get_guild_folder(f"{self._guild.id}/captcha_config.json"))
     
     @Saveable.update()
-    def enable(self):
+    def enable(self) -> None:
         self.enabled = True
     @Saveable.update()
-    def disable(self):
+    def disable(self) -> None:
         self.enabled = False
 
     @Saveable.update()
-    def add_member_captcha(self, member, member_captcha):
-        self.member_captchas[str(member.id)] = member_captcha
+    def set_size(self, size: int) -> None:
+        self.size = size
 
     @Saveable.update()
-    def remove_member_captcha(self, member_id):
-        return self.member_captchas.pop(str(member_id))
+    def set_message(self, message: str) -> None:
+        self.message = message
 
-    def get_member_captcha(self, member_id):
-        return self.member_captchas.get(str(member_id))
-
-    @Saveable.update()
-    def set_channel(self, channel):
-        self.channel_id = channel.id
-
-    def get_channel(self):
-        return self._guild.get_channel(self.channel_id)
-    
 
     @Saveable.update()
     def set_unverified_role(self, role):
@@ -192,6 +183,27 @@ class CaptchaConfigData(Saveable):
     
     def get_verified_role(self):
         return self._guild.get_role(self.verified_role_id)
+    
+    @Saveable.update()
+    def set_channel(self, channel):
+        self.channel_id = channel.id
+
+    def get_channel(self):
+        return self._guild.get_channel(self.channel_id) or self._guild.system_channel
+    
+    
+
+    @Saveable.update()
+    def add_member_captcha(self, member, member_captcha):
+        self.member_captchas[str(member.id)] = member_captcha
+
+    @Saveable.update()
+    def remove_member_captcha(self, member_id):
+        return self.member_captchas.pop(str(member_id))
+
+    def get_member_captcha(self, member_id):
+        return self.member_captchas.get(str(member_id))
+
 
 class MemberCaptcha(Data):
     def __init__(self):
