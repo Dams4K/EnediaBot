@@ -8,6 +8,16 @@ from random import choice
 from data_class import CaptchaConfigData, MemberCaptcha
 from utils.bot_embeds import *
 
+class CaptchaSucceedEmbed(Embed):
+    def __init__(self, captcha_config, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if captcha_config.enabled:
+            self.color = Colour.brand_green()
+            self.set_footer(text="Captcha activé")
+        else:
+            self.color = Colour.gold()
+            self.set_footer(text="Captcha désactivé")
+
 class CaptchaCog(Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -50,7 +60,7 @@ class CaptchaCog(Cog):
         if not captcha_config.enabled: # The captcha is disabled
             return
 
-        channel = captcha_config.get_channel()
+        channel = await captcha_config.fetch_channel()
         if channel is None: # The channel doesn't exist
             return
 
@@ -80,11 +90,22 @@ class CaptchaCog(Cog):
             captcha_config.add_member_captcha(member, member_captcha)
 
     @Cog.listener()
+    async def on_raw_member_remove(self, payload):
+        user = payload.user
+        guild = self.bot.get_guild(payload.guild_id)
+        captcha_config = CaptchaConfigData(guild)
+
+        if member_captcha := captcha_config.remove_member_captcha(user.id): # User wasn't verified
+            if captcha_message := await member_captcha.fetch_message(await captcha_config.fetch_channel()):
+                await captcha_message.delete()
+
+
+    @Cog.listener()
     async def on_message(self, message):
         captcha_config = CaptchaConfigData(message.guild)
 
         channel = message.channel
-        captcha_channel = captcha_config.get_channel()
+        captcha_channel = await captcha_config.fetch_channel()
 
         if channel.id != captcha_channel.id: # Message sent on another channel
             return
@@ -100,7 +121,7 @@ class CaptchaCog(Cog):
             # Clear author captcha data
             captcha_config.remove_member_captcha(message.author.id)
             # Delete the captcha message if it exists
-            if captcha_msg := self.bot.get_message(author_captcha.message_id):
+            if captcha_msg := await channel.fetch_message(author_captcha.message_id):
                 await captcha_msg.delete()
             
             # Add the verified role if it exists
@@ -133,10 +154,7 @@ class CaptchaCog(Cog):
     @option("message", type=str, max_length=2048)
     async def set_message(self, ctx, message: str):
         ctx.captcha_config.set_message(message)
-        embed = SucceedEmbed()
-        if not ctx.captcha_config.enabled:
-            embed = WarningEmbed()
-            embed.set_footer(text="Captcha désactivé")
+        embed = CaptchaSucceedEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
         embed.description = "Le message du captcha a été changé"
@@ -147,10 +165,7 @@ class CaptchaCog(Cog):
     @option("channel", type=GuildChannel, channel_types=[ChannelType.text])
     async def set_channel(self, ctx, channel: TextChannel):
         ctx.captcha_config.set_channel(channel)
-        embed = SucceedEmbed()
-        if not ctx.captcha_config.enabled:
-            embed = WarningEmbed()
-            embed.set_footer(text="Captcha désactivé")
+        embed = CaptchaSucceedEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
         embed.description = f"Le salon du où le captcha sera effectué est maintenant {channel.mention}"
@@ -161,10 +176,7 @@ class CaptchaCog(Cog):
     @option("size", type=int)
     async def set_size(self, ctx, size: int):
         ctx.captcha_config.set_size(size)
-        embed = SucceedEmbed()
-        if not ctx.captcha_config.enabled:
-            embed = WarningEmbed()
-            embed.set_footer(text="Captcha désactivé")
+        embed = CaptchaSucceedEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
         embed.description = f"La taille du text du captcha est mainenant de {size} caractères"
@@ -175,11 +187,8 @@ class CaptchaCog(Cog):
     @option("role", type=Role)
     async def set_unverified_role(self, ctx, role: Role):
         ctx.captcha_config.set_unverified_role(role)
-        embed = SucceedEmbed()
-        if not ctx.captcha_config.enabled:
-            embed = WarningEmbed()
-            embed.set_footer(text="Captcha désactivé")
-        
+        embed = CaptchaSucceedEmbed(ctx.captcha_config)
+
         embed.title = "Changement effectué"
         embed.description = f"Le rôle pour les membres n'ayant pas passé le captcha est maintenant {role.mention}"
 
@@ -189,10 +198,7 @@ class CaptchaCog(Cog):
     @option("role", type=Role)
     async def set_verified_role(self, ctx, role: Role):
         ctx.captcha_config.set_verified_role(role)
-        embed = SucceedEmbed()
-        if not ctx.captcha_config.enabled:
-            embed = WarningEmbed()
-            embed.set_footer(text="Captcha désactivé")
+        embed = CaptchaSucceedEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
         embed.description = f"Le rôle pour les membres ayant passé le captcha est maintenant {role.mention}"

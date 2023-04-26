@@ -25,8 +25,8 @@ class MemberCounterData(Saveable):
         if channel_id in self.channels:
             return self.channels.pop(channel_id)
     
-    def get_channels(self):
-        return [self._guild.get_channel(int(channel_id)) for channel_id in self.channels]
+    async def fetch_channels(self):
+        return [await self._guild.fetch_channel(int(channel_id)) for channel_id in self.channels]
 
     async def update_channels(self):
         for channel_id in self.channels.keys():
@@ -38,7 +38,7 @@ class MemberCounterData(Saveable):
         if channel_name is None:
             return
 
-        channel = self._guild.get_channel(int(channel_id))
+        channel = await self._guild.fetch_channel(int(channel_id))
         if channel is None:
             return
 
@@ -101,7 +101,7 @@ class TicketConfigData(Saveable):
         super().__init__(References.get_guild_folder(f"{self._guild.id}/ticket_config.json"))
     
     async def create_ticket_channel(self, member: discord.Member) -> discord.TextChannel:
-        category = self.get_category_channel()
+        category = await self.fetch_category_channel()
 
         channel_name = self.ticket_channel_name.format(username=member.name)
         reason = f"{member.name} has created a ticket"
@@ -132,13 +132,26 @@ class TicketConfigData(Saveable):
     def set_category(self, category: discord.CategoryChannel):
         self.ticket_category_id = category.id
 
-    def get_category_channel(self):
-        return self._guild.get_channel(self.ticket_category_id)
+    async def fetch_category_channel(self):
+        return await self._guild.fetch_channel(self.ticket_category_id)
 
 class MemberCaptcha(Data):
     def __init__(self):
         self.text = None
         self.message_id = None
+    
+    async def fetch_message(self, channel) -> discord.TextChannel:
+        """Get the captcha message sent by the bot
+
+        Parameters
+        ----------
+            channel: discord.TextChannel
+
+        Returns
+        -------
+            discord.TextChannel | None
+        """
+        return await channel.fetch_message(self.message_id)
 
 class CaptchaConfigData(Saveable):
     def __init__(self, guild):
@@ -212,7 +225,7 @@ class CaptchaConfigData(Saveable):
         
         Returns
         -------
-            discord.Role
+            discord.Role | None
         """
         return self._guild.get_role(self.unverified_role_id)
 
@@ -231,7 +244,7 @@ class CaptchaConfigData(Saveable):
         
         Returns
         -------
-            discord.Role
+            discord.Role | None
         """
         return self._guild.get_role(self.verified_role_id)
     
@@ -245,14 +258,17 @@ class CaptchaConfigData(Saveable):
         """
         self.channel_id = channel.id
 
-    def get_channel(self) -> discord.TextChannel:
+    async def fetch_channel(self) -> discord.TextChannel:
         """Get the channel where the captcha message will be sent
         
         Returns
         -------
-            discord.TextChannel
+            discord.TextChannel | None
         """
-        return self._guild.get_channel(self.channel_id) or self._guild.system_channel
+        try:
+            return await self._guild.fetch_channel(self.channel_id)
+        except discord.NotFound:
+            return self._guild.system_channel
     
     
     @Saveable.update()
@@ -279,9 +295,10 @@ class CaptchaConfigData(Saveable):
         
         Returns
         -------
-            MemberCaptcha
+            MemberCaptcha | None
         """
-        return self.member_captchas.pop(str(member_id))
+        if str(member_id) in self.member_captchas:
+            return self.member_captchas.pop(str(member_id))
 
     def get_member_captcha(self, member_id: int) -> MemberCaptcha:
         """Get a MemberCaptcha asigned to a member
@@ -293,6 +310,6 @@ class CaptchaConfigData(Saveable):
         
         Returns
         -------
-            MemberCaptcha
+            MemberCaptcha | None
         """
         return self.member_captchas.get(str(member_id))

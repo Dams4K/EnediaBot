@@ -38,7 +38,7 @@ class MemberCounterCog(Cog):
         ctx.member_counter.add_channel(channel, name)
     
     @member_counter.command(name="unlink")
-    @option("channel", type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text], autocomplete=lambda ctx: ctx.member_counter.get_channels())
+    @option("channel", type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
     async def member_counter_unlink(self, ctx, channel):
         ctx.member_counter.remove_channel(channel)
 
