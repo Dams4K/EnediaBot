@@ -143,7 +143,7 @@ class CaptchaConfigData(Saveable):
         self.enabled = False
         
         self.size = 5
-        self.message = "{member.mention} écrit le mot affiché sur l'image. Le mot est consitué de 5 caractères, toutes les lettres sont en majuscules"
+        self.message = "{member.mention} écrit le mot affiché sur l'image. Le mot est consitué de {size} caractères, toutes les lettres sont en majuscules"
 
         self.verified_role_id = None
         self.unverified_role_id = self._guild.default_role.id # @everyone
@@ -169,6 +169,8 @@ class CaptchaConfigData(Saveable):
     def set_message(self, message: str) -> None:
         self.message = message
 
+    def get_message(self, **kwargs) -> str:
+        return self.message.format(size=self.size, **kwargs)
 
     @Saveable.update()
     def set_unverified_role(self, role):

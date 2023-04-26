@@ -1,21 +1,21 @@
-from discord import Embed
+from discord import Embed, Colour
 
-class NormalEmbed(Embed):
+class SucceedEmbed(Embed):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.color = discord.Colour.brand_green()
+        self.color = Colour.brand_green()
 
 class WarningEmbed(Embed):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.color = discord.Colour.orange()
+        self.color = Colour.orange()
 
 class DangerEmbed(Embed):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.color = discord.Colour.brand_red()
+        self.color = Colour.brand_red()
 
 class InformativeEmbed(Embed):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.color = discord.Colour.blurple()
+        self.color = Colour.blurple()
