@@ -24,7 +24,10 @@ class MemberCounterData(Saveable):
         channel_id = str(channel.id)
         if channel_id in self.channels:
             return self.channels.pop(channel_id)
-        
+    
+    def get_channels(self):
+        return [self._guild.get_channel(int(channel_id)) for channel_id in self.channels]
+
     async def update_channels(self):
         for channel_id in self.channels.keys():
             await self.update_channel(channel_id)
@@ -131,3 +134,52 @@ class TicketConfigData(Saveable):
 
     def get_category_channel(self):
         return self._guild.get_channel(self.ticket_category_id)
+
+
+class CaptchaConfigData(Saveable):
+    def __init__(self, guild):
+        self._guild = guild
+
+        self.enabled = False
+        
+        self.message = "{member.mention} écrit dans le salon ce qu'il y a d'écrit sur l'image pour accéder aux reste du server"
+
+        self.verified_role_id = None
+        self.unverified_role_id = None
+        self.channel_id = None
+
+        self.member_captchas = {}
+        self._member_captchas_type = MemberCaptcha()
+
+        super().__init__(References.get_guild_folder(f"{self._guild.id}/captcha_config.json"))
+    
+    @Saveable.update()
+    def enable(self):
+        self.enabled = True
+    @Saveable.update()
+    def disable(self):
+        self.enabled = False
+
+    @Saveable.update()
+    def add_member_captcha(self, member, member_captcha):
+        self.member_captchas[str(member.id)] = member_captcha
+
+    @Saveable.update()
+    def remove_member_captcha(self, member_id):
+        return self.member_captchas.pop(str(member_id))
+
+    def get_member_captcha(self, member_id):
+        print(self.member_captchas)
+        return self.member_captchas.get(str(member_id))
+
+    @Saveable.update()
+    def set_channel(self, channel):
+        self.channel_id = channel.id
+
+    def get_channel(self):
+        return self._guild.get_channel(self.channel_id)
+
+class MemberCaptcha(Data):
+    def __init__(self):
+        self.text = None
+        self.message_id = None
