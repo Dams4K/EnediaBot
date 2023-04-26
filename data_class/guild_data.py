@@ -135,6 +135,10 @@ class TicketConfigData(Saveable):
     def get_category_channel(self):
         return self._guild.get_channel(self.ticket_category_id)
 
+class MemberCaptcha(Data):
+    def __init__(self):
+        self.text = None
+        self.message_id = None
 
 class CaptchaConfigData(Saveable):
     def __init__(self, guild):
@@ -156,58 +160,139 @@ class CaptchaConfigData(Saveable):
     
     @Saveable.update()
     def enable(self) -> None:
+        """Enable the captcha"""
         self.enabled = True
     @Saveable.update()
     def disable(self) -> None:
+        """Disable the captcha"""
         self.enabled = False
 
     @Saveable.update()
     def set_size(self, size: int) -> None:
+        """Set the size of the generated captcha text
+        
+        Parameters
+        ----------
+            size: int
+        """
         self.size = size
 
     @Saveable.update()
     def set_message(self, message: str) -> None:
-        self.message = message
+        """Set the message sent with the image
+        
+        Parameters
+        ----------
+            message: str
+                max size: 2048
+        """
+        self.message = message[:2048]
 
     def get_message(self, **kwargs) -> str:
-        return self.message.format(size=self.size, **kwargs)
+        """Get the message sent with the image with basic formatting (size, roles...)
+        
+        Returns
+        -------
+            str
+        """
+        return self.message.format(size=self.size, verified_role=self.get_verified_role(), unverified_role=self.get_unverified_role(), **kwargs)
 
     @Saveable.update()
-    def set_unverified_role(self, role):
+    def set_unverified_role(self, role: discord.Role) -> None:
+        """Set the unverified role
+        
+        Parameters
+        ----------
+            role: discord.Role
+        """
         self.unverified_role_id = role.id
     
-    def get_unverified_role(self):
+    def get_unverified_role(self) -> discord.Role:
+        """Get the unverified role
+        
+        Returns
+        -------
+            discord.Role
+        """
         return self._guild.get_role(self.unverified_role_id)
 
     @Saveable.update()
-    def set_verified_role(self, role):
+    def set_verified_role(self, role: discord.Role) -> None:
+        """Set the verified role
+        
+        Parameters
+        ----------
+            role: discord.Role
+        """
         self.verified_role_id = role.id
     
-    def get_verified_role(self):
+    def get_verified_role(self) -> discord.Role:
+        """Get the verified role
+        
+        Returns
+        -------
+            discord.Role
+        """
         return self._guild.get_role(self.verified_role_id)
     
     @Saveable.update()
-    def set_channel(self, channel):
+    def set_channel(self, channel: discord.TextChannel) -> None:
+        """Set the channel where the captcha message will be sent
+        
+        Parameters
+        ----------
+            channel: discord.TextChannel
+        """
         self.channel_id = channel.id
 
-    def get_channel(self):
+    def get_channel(self) -> discord.TextChannel:
+        """Get the channel where the captcha message will be sent
+        
+        Returns
+        -------
+            discord.TextChannel
+        """
         return self._guild.get_channel(self.channel_id) or self._guild.system_channel
     
     
-
     @Saveable.update()
-    def add_member_captcha(self, member, member_captcha):
+    def add_member_captcha(self, member: discord.Member, member_captcha: MemberCaptcha) -> None:
+        """Add a MemberCaptcha
+        
+        Parameters
+        ----------
+            member: discord.Member
+                The member to whom the MemberCaptcha instance will be assigned
+            member_captcha: MemberCaptcha
+                The MemberCaptcha instance
+        """
         self.member_captchas[str(member.id)] = member_captcha
 
     @Saveable.update()
-    def remove_member_captcha(self, member_id):
+    def remove_member_captcha(self, member_id: int) -> MemberCaptcha:
+        """Remove a MemberCaptcha asigned to a member
+        
+        Parameters
+        ----------
+            member_id: int
+                The identifier of the member
+        
+        Returns
+        -------
+            MemberCaptcha
+        """
         return self.member_captchas.pop(str(member_id))
 
-    def get_member_captcha(self, member_id):
+    def get_member_captcha(self, member_id: int) -> MemberCaptcha:
+        """Get a MemberCaptcha asigned to a member
+        
+        Parameters
+        ----------
+            member_id: int
+                The identifier of the member
+        
+        Returns
+        -------
+            MemberCaptcha
+        """
         return self.member_captchas.get(str(member_id))
-
-
-class MemberCaptcha(Data):
-    def __init__(self):
-        self.text = None
-        self.message_id = None
