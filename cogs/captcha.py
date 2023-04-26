@@ -32,9 +32,14 @@ class CaptchaCog(Cog):
         if channel is None: # The channel doesn't exist
             return
 
+        # Add the unverified role if it exists
+        unverified_role = captcha_config.get_unverified_role()
+        if not unverified_role in [None, guild.default_role]:
+            await member.add_roles(unverified_role)
+
+        # Send image
         text = self.generate_captcha_text()
         img = self.generate_captcha_image(text)
-
         with io.BytesIO() as image_binary:
             img.save(image_binary, "PNG")
             image_binary.seek(0)
@@ -62,18 +67,26 @@ class CaptchaCog(Cog):
         if author_captcha is None: # Author has no captcha
             return
 
-        if message.content == author_captcha.text:
+        # Remove author's message
+        await message.delete()
+
+        if message.content == author_captcha.text: # Correct
+            # Clear author from unverified members
             captcha_config.remove_member_captcha(message.author.id)
-
-            reply_msg = await message.reply("Réponse correct !")
-            captcha_msg = self.bot.get_message(author_captcha.message_id)
-
-            await asyncio.sleep(2)
-
-            await message.delete()
-            await reply_msg.delete()
-            if captcha_msg is not None:
+            # Delete the captcha message if it exists
+            if captcha_msg := self.bot.get_message(author_captcha.message_id):
                 await captcha_msg.delete()
+            
+            # Add the verified role if it exists
+            if verified_role := captcha_config.get_verified_role():
+                await message.author.add_roles(verified_role) 
+
+            # Remove the unverified role if it exists
+            unverified_role = captcha_config.get_unverified_role()
+            if not unverified_role in [None, message.guild.default_role]:
+                await message.author.remove_roles(unverified_role)
+        else:
+            pass
 
 
     captcha = SlashCommandGroup("captcha", default_member_permissions=Permissions(administrator=True), guild_only=True)
@@ -91,6 +104,16 @@ class CaptchaCog(Cog):
     @option("channel", type=GuildChannel, channel_types=[ChannelType.text])
     async def set_channel(self, ctx, channel: TextChannel):
         ctx.captcha_config.set_channel(channel)
+
+    @c_set.command(name="unverified_role")
+    @option("role", type=Role)
+    async def set_unverified_role(self, ctx, role: Role):
+        ctx.captcha_config.set_unverified_role(role)
+    
+    @c_set.command(name="verified_role")
+    @option("role", type=Role)
+    async def set_verified_role(self, ctx, role: Role):
+        ctx.captcha_config.set_verified_role(role)
 
 
 def setup(bot):

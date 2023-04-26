@@ -145,7 +145,7 @@ class CaptchaConfigData(Saveable):
         self.message = "{member.mention} écrit dans le salon ce qu'il y a d'écrit sur l'image pour accéder aux reste du server"
 
         self.verified_role_id = None
-        self.unverified_role_id = None
+        self.unverified_role_id = self._guild.default_role.id # @everyone
         self.channel_id = None
 
         self.member_captchas = {}
@@ -169,7 +169,6 @@ class CaptchaConfigData(Saveable):
         return self.member_captchas.pop(str(member_id))
 
     def get_member_captcha(self, member_id):
-        print(self.member_captchas)
         return self.member_captchas.get(str(member_id))
 
     @Saveable.update()
@@ -178,6 +177,21 @@ class CaptchaConfigData(Saveable):
 
     def get_channel(self):
         return self._guild.get_channel(self.channel_id)
+    
+
+    @Saveable.update()
+    def set_unverified_role(self, role):
+        self.unverified_role_id = role.id
+    
+    def get_unverified_role(self):
+        return self._guild.get_role(self.unverified_role_id)
+
+    @Saveable.update()
+    def set_verified_role(self, role):
+        self.verified_role_id = role.id
+    
+    def get_verified_role(self):
+        return self._guild.get_role(self.verified_role_id)
 
 class MemberCaptcha(Data):
     def __init__(self):
