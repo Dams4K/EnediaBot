@@ -1,11 +1,18 @@
+import time
 from discord import *
 from discord.abc import GuildChannel
+from discord.ext import tasks
 from data_class import MemberCounterData
+from utils.bot_embeds import SucceedEmbed, DangerEmbed
 
 class MemberCounterCog(Cog):
     def __init__(self, bot):
         self.bot = bot
     
+    @tasks.loop(minutes=2, seconds=30)
+    async def update_channels_task(self):
+        await self.update_channels(self.bot.guilds)
+
     async def update_channels(self, guilds: list):
         for guild in guilds:
             member_counter = MemberCounterData(guild)
@@ -36,11 +43,21 @@ class MemberCounterCog(Cog):
     @option("name", type=str)
     async def member_counter_link(self, ctx, channel, name: str):
         ctx.member_counter.add_channel(channel, name)
+
+        embed = SucceedEmbed(title="Salon relié")
+        embed.description = f"Le salon {channel.mention} comptera les membres, son nom sera mis-à-jour dans les minutes qui suivent et devrait ressembler à ça:\n\n{ctx.member_counter.get_channel_name(channel.id)}"
+
+        await ctx.respond(embed=embed)
     
     @member_counter.command(name="unlink")
     @option("channel", type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
     async def member_counter_unlink(self, ctx, channel):
         ctx.member_counter.remove_channel(channel)
+
+        embed = DangerEmbed(title="Salon dissocié")
+        embed.description = f"Le salon {channel.mention} ne comptera plus les membres"
+
+        await ctx.respond(embed=embed)
 
 def setup(bot):
     bot.add_cog(MemberCounterCog(bot))
