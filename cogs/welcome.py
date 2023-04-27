@@ -1,10 +1,11 @@
 import io
 import math
 from discord import *
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 class WelcomeCog(Cog):
     AVATAR_SIZE = 384
+    FONT_SIZE = 86
 
     def get_ceil_power2_size(self, size):
         """Returns the closer but higher power 2 number of the given size
@@ -26,7 +27,7 @@ class WelcomeCog(Cog):
         return (position[0], position[1], position[0]+size[0], position[1]+size[1])
 
     async def get_welcome_image(self, member: Member):
-        template = Image.open("images/welcome_template.png")
+        template = Image.open("assets/images/welcome_template.png")
 
         # Get member's avatar
         member_avatar = member.display_avatar.with_size(self.get_ceil_power2_size(WelcomeCog.AVATAR_SIZE))
@@ -35,14 +36,20 @@ class WelcomeCog(Cog):
         if avatar_image.size[0] != WelcomeCog.AVATAR_SIZE:
             avatar_image = avatar_image.resize([WelcomeCog.AVATAR_SIZE]*2)
 
+        # Create avatar mask
         avatar_mask = Image.new("L", avatar_image.size, 0)
         draw = ImageDraw.Draw(avatar_mask)
         draw.ellipse((0, 0, WelcomeCog.AVATAR_SIZE, WelcomeCog.AVATAR_SIZE), fill=255)
         avatar_mask = avatar_mask.filter(ImageFilter.GaussianBlur(1))
         
+        # Add avatar image
         avatar_area = self.get_area([48]*2, [WelcomeCog.AVATAR_SIZE]*2)
-        
         template.paste(avatar_image, avatar_area, avatar_mask)
+
+        # Add text
+        font = ImageFont.truetype("assets/font/Roboto-Medium.ttf", WelcomeCog.FONT_SIZE)
+        template_draw = ImageDraw.Draw(template)
+        template_draw.multiline_text((avatar_area[2]+16, (avatar_area[1]+avatar_area[3])/2), f"{member} a rejoint le serveur", font=font, fill=(255, 255, 255, 255), anchor="lm")
 
         with io.BytesIO() as image_binary:
             template.save(image_binary, "PNG")
