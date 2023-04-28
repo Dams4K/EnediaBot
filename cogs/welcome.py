@@ -44,6 +44,7 @@ class WelcomeCog(Cog):
 
     welcome = SlashCommandGroup("welcome", default_member_permissions=Permissions(administrator=True), guild_only=True)
     w_set = welcome.create_subgroup("set")
+    image = welcome.create_subgroup("image")
 
     @w_set.command(name="channel")
     @option("channel", type=GuildChannel, channel_types=[ChannelType.text])
@@ -55,6 +56,10 @@ class WelcomeCog(Cog):
     async def set_message(self, ctx, message: str):
         ctx.welcome_config.set_channel(message)
 
+    @image.command(name="font_size")
+    @option("size", type=int)
+    async def image_font_size(self, ctx, size: int):
+        ctx.welcome_config.set_font_size(size)
 
 def setup(bot):
     bot.add_cog(WelcomeCog(bot))

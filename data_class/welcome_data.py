@@ -14,6 +14,12 @@ class WelcomeConfig(Saveable):
         
         self.image = None
         self.image_text = "{member} a rejoint le serveur"
+        self.image_text_pos = (48+320+32, 48+320/2)
+        self.font_size = 86
+
+        self.avatar_pos = [48, 48]
+        self.avatar_size = 320
+
 
         super().__init__(References.get_guild_folder(f"{self._guild.id}/welcome_config.json"))
     
@@ -52,6 +58,21 @@ class WelcomeConfig(Saveable):
     
     def get_image_text(self, member: discord.Member) -> str:
         return self.image_text.format(member=member, guild=self._guild)
+
+    @Saveable.update()
+    def set_font_size(self, size: int) -> None:
+        self.font_size = size
+    
+    @Saveable.update()
+    def set_avatar_size(self, size: int) -> None:
+        self.avatar_size = size
+
+    @Saveable.update()
+    def set_avatar_pos(self, pos: list) -> None:
+        self.avatar_pos = pos
+
+    def get_avatar_area(self):
+        return self.avatar_pos + [self.avatar_pos[0] + self.avatar_size, self.avatar_pos[1] + self.avatar_size]
 
     def get_ceil_power2_size(self, size):
         """Returns the closer but higher power 2 number of the given size
@@ -101,10 +122,6 @@ class WelcomeConfig(Saveable):
         return result
 
     async def get_image(self, member):
-        font_size = 86
-        avatar_size = 320
-        avatar_pos = (48, 48, avatar_size+48, avatar_size+48)
-
         background = Image.open("assets/images/cropped_background2.png")
         foreground = Image.new("RGB", background.size, color="#1f2025")
 
@@ -117,32 +134,32 @@ class WelcomeConfig(Saveable):
 
         # Draw avatar hole
         mask_draw = ImageDraw.Draw(mask)
-        mask_draw.ellipse(avatar_pos, fill="black")
+        mask_draw.ellipse(self.get_avatar_area(), fill="black")
         mask = mask.filter(ImageFilter.GaussianBlur(2))
 
         result = Image.composite(foreground, background, mask)
 
         # Get member's avatar
-        member_avatar = member.display_avatar.with_size(self.get_ceil_power2_size(avatar_size))
+        member_avatar = member.display_avatar.with_size(self.get_ceil_power2_size(self.avatar_size))
         avatar_bytes = await member_avatar.read()
         avatar_image = Image.open(io.BytesIO(avatar_bytes))
-        if avatar_image.size[0] != avatar_size:
-            avatar_image = avatar_image.resize([avatar_size]*2)
+        if avatar_image.size[0] != self.avatar_size:
+            avatar_image = avatar_image.resize([self.avatar_size]*2)
 
         # Create avatar mask
         avatar_mask = Image.new("L", avatar_image.size, 0)
         draw = ImageDraw.Draw(avatar_mask)
-        draw.ellipse((0, 0, avatar_size, avatar_size), fill=255)
+        draw.ellipse((0, 0, self.avatar_size, self.avatar_size), fill=255)
         avatar_mask = avatar_mask.filter(ImageFilter.GaussianBlur(1))
 
         # Add avatar image
-        result.paste(avatar_image, avatar_pos, avatar_mask)
+        result.paste(avatar_image, self.get_avatar_area(), avatar_mask)
 
         # Add text
-        font = ImageFont.truetype("assets/font/Roboto-Medium.ttf", font_size)
-        text = self.fit_text_in(self.get_image_text(member), result.size[0] - avatar_size - 48 - 24, font)
+        font = ImageFont.truetype("assets/font/Roboto-Medium.ttf", self.font_size)
+        text = self.fit_text_in(self.get_image_text(member), result.size[0] - self.avatar_size - 48 - 24, font)
 
         result_draw = ImageDraw.Draw(result)
-        result_draw.multiline_text((avatar_pos[2]+24, (avatar_pos[1]+avatar_pos[3])/2), "\n".join(text), font=font, fill=(255, 255, 255, 255), anchor="lm")
+        result_draw.multiline_text(self.image_text_pos, "\n".join(text), font=font, fill=(255, 255, 255, 255), anchor="lm")
 
         return result
