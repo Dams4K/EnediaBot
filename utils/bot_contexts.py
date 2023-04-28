@@ -10,6 +10,7 @@ class BotApplicationContext(ApplicationContext):
         self.captcha_config = None
 
         if self.guild is not None:
-            self.member_counter = MemberCounterData(self.guild)
-            self.ticket_config = TicketConfigData(self.guild)
-            self.captcha_config = CaptchaConfigData(self.guild)
+            self.member_counter = MemberCounter(self.guild)
+            self.ticket_config = TicketConfig(self.guild)
+            self.captcha_config = CaptchaConfig(self.guild)
+            self.welcome_config = WelcomeConfig(self.guild)

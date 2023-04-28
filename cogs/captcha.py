@@ -5,7 +5,7 @@ from discord.abc import GuildChannel
 from captcha.image import ImageCaptcha
 from string import ascii_uppercase, digits
 from random import choice
-from data_class import CaptchaConfigData, MemberCaptcha
+from data_class import CaptchaConfig, MemberCaptcha
 from utils.bot_embeds import *
 
 class CaptchaSucceedEmbed(Embed):
@@ -55,7 +55,7 @@ class CaptchaCog(Cog):
     @Cog.listener()
     async def on_member_join(self, member):
         guild = member.guild
-        captcha_config = CaptchaConfigData(guild)
+        captcha_config = CaptchaConfig(guild)
 
         if not captcha_config.enabled: # The captcha is disabled
             return
@@ -93,7 +93,7 @@ class CaptchaCog(Cog):
     async def on_raw_member_remove(self, payload):
         user = payload.user
         guild = self.bot.get_guild(payload.guild_id)
-        captcha_config = CaptchaConfigData(guild)
+        captcha_config = CaptchaConfig(guild)
 
         if member_captcha := captcha_config.remove_member_captcha(user.id): # User wasn't verified
             if captcha_message := await member_captcha.fetch_message(await captcha_config.fetch_channel()):
@@ -102,7 +102,7 @@ class CaptchaCog(Cog):
 
     @Cog.listener()
     async def on_message(self, message):
-        captcha_config = CaptchaConfigData(message.guild)
+        captcha_config = CaptchaConfig(message.guild)
 
         channel = message.channel
         captcha_channel = await captcha_config.fetch_channel()

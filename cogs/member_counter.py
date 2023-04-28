@@ -2,7 +2,7 @@ import time
 from discord import *
 from discord.abc import GuildChannel
 from discord.ext import tasks
-from data_class import MemberCounterData
+from data_class import MemberCounter
 from utils.bot_embeds import SucceedEmbed, DangerEmbed
 
 class MemberCounterCog(Cog):
@@ -15,7 +15,7 @@ class MemberCounterCog(Cog):
 
     async def update_channels(self, guilds: list):
         for guild in guilds:
-            member_counter = MemberCounterData(guild)
+            member_counter = MemberCounter(guild)
             await member_counter.update_channels()
 
     @Cog.listener()

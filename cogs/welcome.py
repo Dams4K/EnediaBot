@@ -1,7 +1,9 @@
 import io
 import math
 from discord import *
+from discord.abc import GuildChannel
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from data_class import WelcomeConfig
 
 class WelcomeCog(Cog):
     AVATAR_SIZE = 384
@@ -86,10 +88,10 @@ class WelcomeCog(Cog):
 
         text = f"{member} a rejoint le serveur"
         # print(self.get_text_dimensions(text, font))
-        text = self.fit_text_in(text, template.size[0] - WelcomeCog.AVATAR_SIZE - 48 - 16, font)
+        text = self.fit_text_in(text, template.size[0] - WelcomeCog.AVATAR_SIZE - 48 - 24, font)
 
         template_draw = ImageDraw.Draw(template)
-        template_draw.multiline_text((avatar_area[2]+16, (avatar_area[1]+avatar_area[3])/2), "\n".join(text), font=font, fill=(255, 255, 255, 255), anchor="lm")
+        template_draw.multiline_text((avatar_area[2]+24, (avatar_area[1]+avatar_area[3])/2), "\n".join(text), font=font, fill=(255, 255, 255, 255), anchor="lm")
 
         with io.BytesIO() as image_binary:
             template.save(image_binary, "PNG")
@@ -101,14 +103,23 @@ class WelcomeCog(Cog):
     @Cog.listener()
     async def on_member_join(self, member):
         guild = member.guild
-        if channel := await guild.fetch_channel(1101184040373076069):
-                await channel.send(file=await self.get_welcome_image(member))
-        
+        welcome_config = WelcomeConfig(guild)
 
-    @Cog.listener() # TODO: REMOVE THIS
-    async def on_message(self, message):
-        if not message.author.bot:
-            await self.on_member_join(message.author)
+        if channel := await welcome_config.fetch_channel():
+            await channel.send(f"Hey {member.mention}, Bienvenue sur **Enedia** !", file=await self.get_welcome_image(member))
+        
+    welcome = SlashCommandGroup("welcome", default_member_permissions=Permissions(administrator=True), guild_only=True)
+    w_set = welcome.create_subgroup("set")
+
+    @w_set.command(name="channel")
+    @option("channel", type=GuildChannel, channel_types=[ChannelType.text])
+    async def set_channel(self, ctx, channel: TextChannel):
+        ctx.welcome_config.set_channel(channel)
+    
+    @w_set.command(name="message")
+    @option("message", type=str, max_length=1024)
+    async def set_message(self, ctx, message: str):
+        pass
 
 
 def setup(bot):

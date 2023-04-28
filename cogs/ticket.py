@@ -1,7 +1,7 @@
 from discord import *
 from discord.ui import *
 from discord.abc import GuildChannel
-from data_class import TicketConfigData
+from data_class import TicketConfig
 
 class CreateTicketView(View):
     def __init__(self, button_label=None):
@@ -13,7 +13,7 @@ class CreateTicketView(View):
 
     @button(label="Create a Ticket", custom_id="create-button", style=ButtonStyle.primary)
     async def create_button_callback(self, button, interaction):
-        ticket_config = TicketConfigData(interaction.guild)
+        ticket_config = TicketConfig(interaction.guild)
 
         await ticket_config.create_ticket_channel(interaction.user)
 
