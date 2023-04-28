@@ -7,6 +7,9 @@ class WelcomeCog(Cog):
     AVATAR_SIZE = 384
     FONT_SIZE = 86
 
+    def __init__(self, bot):
+        self.bot = bot
+
     def get_ceil_power2_size(self, size):
         """Returns the closer but higher power 2 number of the given size
 
@@ -20,11 +23,43 @@ class WelcomeCog(Cog):
         """
         return 2**math.ceil(math.log10(size)/math.log10(2))
 
-    def __init__(self, bot):
-        self.bot = bot
-
     def get_area(self, position: list, size: list):
         return (position[0], position[1], position[0]+size[0], position[1]+size[1])
+
+    def get_text_dimensions(self, text_string, font):
+        # from https://stackoverflow.com/a/46220683/9263761
+        ascent, descent = font.getmetrics()
+
+        text_width = font.getmask(text_string).getbbox()[2]
+        text_height = font.getmask(text_string).getbbox()[3] + descent
+
+        return (text_width, text_height)
+
+    def fit_text_in(self, text, width, font) -> list:
+        result = []
+
+        remaining_text = ""
+        tries = 0
+
+        while not text == remaining_text == "":
+            dimension = self.get_text_dimensions(text, font)
+
+            if dimension[0] > width:
+                splitted_text = text.split()
+                
+                if len(splitted_text) == 1:
+                    remaining_text = text[-1] + remaining_text
+                    text = text[:-1]
+                else:
+                    text = " ".join(splitted_text[:-1])
+                    remaining_text = " " + splitted_text[-1] + remaining_text            
+            else:
+                result.append(text.lstrip())
+                text = remaining_text.lstrip()
+                remaining_text = ""
+
+        return result
+
 
     async def get_welcome_image(self, member: Member):
         template = Image.open("assets/images/welcome_template.png")
@@ -48,8 +83,13 @@ class WelcomeCog(Cog):
 
         # Add text
         font = ImageFont.truetype("assets/font/Roboto-Medium.ttf", WelcomeCog.FONT_SIZE)
+
+        text = f"{member} a rejoint le serveur"
+        # print(self.get_text_dimensions(text, font))
+        text = self.fit_text_in(text, template.size[0] - WelcomeCog.AVATAR_SIZE - 48 - 16, font)
+
         template_draw = ImageDraw.Draw(template)
-        template_draw.multiline_text((avatar_area[2]+16, (avatar_area[1]+avatar_area[3])/2), f"{member} a rejoint le serveur", font=font, fill=(255, 255, 255, 255), anchor="lm")
+        template_draw.multiline_text((avatar_area[2]+16, (avatar_area[1]+avatar_area[3])/2), "\n".join(text), font=font, fill=(255, 255, 255, 255), anchor="lm")
 
         with io.BytesIO() as image_binary:
             template.save(image_binary, "PNG")
