@@ -14,7 +14,7 @@ class WelcomeConfig(Saveable):
         
         self.image = None
         self.image_text = "{member} a rejoint le serveur"
-        self.image_text_pos = (48+320+32, 48+320/2)
+        self.image_text_pos = [48+320+32, 48+320/2]
         self.font_size = 86
 
         self.avatar_pos = [48, 48]
@@ -68,8 +68,19 @@ class WelcomeConfig(Saveable):
         self.avatar_size = size
 
     @Saveable.update()
-    def set_avatar_pos(self, pos: list) -> None:
-        self.avatar_pos = pos
+    def set_avatar_pos(self, x: int, y: int) -> None:
+        self.avatar_pos = [x, y]
+
+    @Saveable.update()
+    def set_image_text(self, text) -> None:
+        self.image_text = text[:1024]
+    
+    def get_image_text(self, member) -> str:
+        return self.image_text.format(member=member, guild=self._guild)
+
+    def set_image_text_pos(self, x: int, y: int) -> None:
+        self.image_text_pos = [x, y]
+
 
     def get_avatar_area(self):
         return self.avatar_pos + [self.avatar_pos[0] + self.avatar_size, self.avatar_pos[1] + self.avatar_size]
