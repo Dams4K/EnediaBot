@@ -28,22 +28,6 @@ class WelcomeCog(Cog):
         if channel := await welcome_config.fetch_channel():
             if file := await self.get_welcome_file(member, welcome_config):
                 await channel.send(welcome_config.get_message(member), file=file)
-        
-    @Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot:
-            return
-
-        welcome_config = WelcomeConfig(message.guild)
-
-        with io.BytesIO() as image_binary:
-            img = await welcome_config.get_image(message.author)
-            img.save(image_binary, "PNG")
-            image_binary.seek(0)
-            
-            file = File(image_binary, filename="welcome.png")
-            await message.channel.send(file=file)
-
 
     welcome = SlashCommandGroup("welcome", default_member_permissions=Permissions(administrator=True), guild_only=True)
     w_set = welcome.create_subgroup("set")
