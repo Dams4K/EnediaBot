@@ -13,6 +13,11 @@ class MinecraftLinkCog(Cog):
         minecraft_member_data = MinecraftMemberData(ctx.author, ctx.guild)
         await minecraft_member_data.set_uuid_from_name(username)
 
+    @minecraft.command(name="unlink")
+    async def minecraft_unlink(self, ctx):
+        minecraft_member_data = MinecraftMemberData(ctx.author, ctx.guild)
+        minecraft_member_data.delete()
+
 
 def setup(bot):
     bot.add_cog(MinecraftLinkCog(bot))

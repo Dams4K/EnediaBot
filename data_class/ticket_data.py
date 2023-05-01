@@ -26,11 +26,7 @@ class TicketConfig(Saveable):
             member: discord.PermissionOverwrite(read_message_history=True, attach_files=True, view_channel=True, send_messages=True, read_messages=True)
         }
 
-        channel = await self._guild.create_text_channel(channel_name, reason=reason, category=category, overwrites=overwrites)
-
-        await channel.send(member.mention)
-
-        return channel
+        return await self._guild.create_text_channel(channel_name, reason=reason, category=category, overwrites=overwrites) 
 
     @Saveable.update()
     def set_message_title(self, value):

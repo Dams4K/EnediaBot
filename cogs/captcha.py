@@ -102,6 +102,9 @@ class CaptchaCog(Cog):
 
     @Cog.listener()
     async def on_message(self, message):
+        if message.guild is None:
+            return
+        
         captcha_config = CaptchaConfig(message.guild)
 
         channel = message.channel
