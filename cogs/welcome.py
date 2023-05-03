@@ -4,6 +4,17 @@ from discord import *
 from discord.abc import GuildChannel
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from data_class import WelcomeConfig
+from utils.bot_embeds import *
+
+class WelcomePositiveEmbed(Embed):
+    def __init__(self, welcome_config, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if welcome_config.enabled:
+            self.color = Colour.brand_green()
+            self.set_footer(text="Messages de bienvenue activé")
+        else:
+            self.color = Colour.gold()
+            self.set_footer(text="Messages de bienvenue désactivé")
 
 class WelcomeCog(Cog):
     AVATAR_SIZE = 320
@@ -25,6 +36,9 @@ class WelcomeCog(Cog):
         guild = member.guild
         welcome_config = WelcomeConfig(guild)
 
+        if not welcome_config.enabled:
+            return
+
         if channel := await welcome_config.fetch_channel():
             if file := await self.get_welcome_file(member, welcome_config):
                 await channel.send(welcome_config.get_message(member), file=file)
@@ -33,15 +47,46 @@ class WelcomeCog(Cog):
     w_set = welcome.create_subgroup("set")
     image = welcome.create_subgroup("image")
 
+    @welcome.command(name="enable")
+    async def enable_welcome(self, ctx):
+        ctx.welcome_config.enable()
+
+        embed = SucceedEmbed(title="Activé", description="Les messages de bienvenue sont activés")
+        await ctx.respond(embed=embed)
+
+    @welcome.command(name="disable")
+    async def disable_welcome(self, ctx):
+        ctx.welcome_config.disable()
+
+        embed = DangerEmbed(title="Désactivé", description="Les messages de bienvenue sont désactivés")
+        await ctx.respond(embed=embed)
+
+    @welcome.command(name="show")
+    async def welcome_show(self, ctx):
+        if file := await self.get_welcome_file(ctx.author, ctx.welcome_config):
+            await ctx.respond(ctx.welcome_config.get_message(ctx.author), file=file)
+        else:
+            await ctx.respond(ctx.welcome_config.get_message(ctx.author))
+
     @w_set.command(name="channel")
     @option("channel", type=GuildChannel, channel_types=[ChannelType.text])
     async def set_channel(self, ctx, channel: TextChannel):
         ctx.welcome_config.set_channel(channel)
+
+        title = "Salon redéfini"
+        description = f"Les messages de bienvenue seront désormais envoyés dans le salon {channel.mention}"
+        embed = WelcomePositiveEmbed(ctx.welcome_config, title=title, description=description)
+        await ctx.respond(embed=embed)
     
     @w_set.command(name="message")
-    @option("message", type=str, max_length=1024)
+    @option("message", type=str, max_length=1024, required=False)
     async def set_message(self, ctx, message: str):
-        ctx.welcome_config.set_channel(message)
+        ctx.welcome_config.set_message(message)
+
+        title = "Message de bienvenue redéfini"
+        description = f"Le message de bienvenue a été changé, fait {self.welcome_show.mention} pour voir le résultat"
+        embed = WelcomePositiveEmbed(ctx.welcome_config, title=title, description=description)
+        await ctx.respond(embed=embed)
 
     @image.command(name="font_size")
     @option("size", type=int)

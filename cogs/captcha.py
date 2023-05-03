@@ -8,7 +8,7 @@ from random import choice
 from data_class import CaptchaConfig, MemberCaptcha
 from utils.bot_embeds import *
 
-class CaptchaSucceedEmbed(Embed):
+class CaptchaPositiveEmbed(Embed):
     def __init__(self, captcha_config, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if captcha_config.enabled:
@@ -157,7 +157,7 @@ class CaptchaCog(Cog):
     @option("message", type=str, max_length=2048)
     async def set_message(self, ctx, message: str):
         ctx.captcha_config.set_message(message)
-        embed = CaptchaSucceedEmbed(ctx.captcha_config)
+        embed = CaptchaPositiveEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
         embed.description = "Le message du captcha a été changé"
@@ -168,7 +168,7 @@ class CaptchaCog(Cog):
     @option("channel", type=GuildChannel, channel_types=[ChannelType.text])
     async def set_channel(self, ctx, channel: TextChannel):
         ctx.captcha_config.set_channel(channel)
-        embed = CaptchaSucceedEmbed(ctx.captcha_config)
+        embed = CaptchaPositiveEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
         embed.description = f"Le salon du où le captcha sera effectué est maintenant {channel.mention}"
@@ -179,7 +179,7 @@ class CaptchaCog(Cog):
     @option("size", type=int)
     async def set_size(self, ctx, size: int):
         ctx.captcha_config.set_size(size)
-        embed = CaptchaSucceedEmbed(ctx.captcha_config)
+        embed = CaptchaPositiveEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
         embed.description = f"La taille du text du captcha est mainenant de {size} caractères"
@@ -190,7 +190,7 @@ class CaptchaCog(Cog):
     @option("role", type=Role)
     async def set_unverified_role(self, ctx, role: Role):
         ctx.captcha_config.set_unverified_role(role)
-        embed = CaptchaSucceedEmbed(ctx.captcha_config)
+        embed = CaptchaPositiveEmbed(ctx.captcha_config)
 
         embed.title = "Changement effectué"
         embed.description = f"Le rôle pour les membres n'ayant pas passé le captcha est maintenant {role.mention}"
@@ -201,7 +201,7 @@ class CaptchaCog(Cog):
     @option("role", type=Role)
     async def set_verified_role(self, ctx, role: Role):
         ctx.captcha_config.set_verified_role(role)
-        embed = CaptchaSucceedEmbed(ctx.captcha_config)
+        embed = CaptchaPositiveEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
         embed.description = f"Le rôle pour les membres ayant passé le captcha est maintenant {role.mention}"

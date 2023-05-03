@@ -9,6 +9,8 @@ class WelcomeConfig(Saveable):
     def __init__(self, guild):
         self._guild = guild
 
+        self.enabled = False
+
         self.channel_id = self._guild.system_channel
         self.message = "Hey {member.mention}, Bienvenue sur **{guild.name}** !"
         
@@ -23,6 +25,14 @@ class WelcomeConfig(Saveable):
 
         super().__init__(References.get_guild_folder(f"{self._guild.id}/welcome_config.json"))
     
+    @Saveable.update()
+    def enable(self):
+        self.enabled = True
+
+    @Saveable.update()
+    def disable(self):
+        self.enabled = False
+
     @Saveable.update()
     def set_channel(self, channel: discord.TextChannel) -> None:
         """Set the channel where the welcome message will be sent
@@ -47,11 +57,14 @@ class WelcomeConfig(Saveable):
     
     @Saveable.update()
     def set_message(self, message: str):
-        self.message = message[:1024]
+        self.message = message
     
     def get_message(self, member: discord.Member) -> str:
-        return self.message.format(member=member, guild=self._guild)
-    
+        if isinstance(self.message, str):
+            return self.message.format(member=member, guild=self._guild)
+        else:
+            return None
+
     @Saveable.update()
     def set_image_text(self, text: str) -> None:
         self.image_text = text
