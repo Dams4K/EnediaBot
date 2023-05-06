@@ -3,7 +3,7 @@ from discord import *
 from discord.abc import GuildChannel
 from discord.ext import tasks
 from data_class import MemberCounter
-from utils.bot_embeds import SucceedEmbed, DangerEmbed
+from utils.bot_embeds import SucceedEmbed, DangerEmbed, InformativeEmbed
 
 class MemberCounterCog(Cog):
     def __init__(self, bot):
@@ -58,6 +58,26 @@ class MemberCounterCog(Cog):
         embed.description = f"Le salon {channel.mention} ne comptera plus les membres"
 
         await ctx.respond(embed=embed)
+
+    @member_counter.command(name="help")
+    async def member_counter_help(self, ctx):
+        embed = InformativeEmbed(title="Formatage")
+        description = """Liste des *placeholders* existants
+
+`{member_count}` : total des membres
+`{connected_members}` : membres connectés
+`{offline_members}` : membres en hors ligne ⚫
+`{online_members}` : membres en ligne 🟢
+`{idle_members}` : membres inactifs 🟡
+`{dnd_members}` : membres à ne pas déranger 🔴
+`{streaming_members}` : membres en stream 🟣
+`{bot_members}` : bots
+"""
+        embed.description = description
+        embed.set_footer(text="Le nom d'un salon peut prendre quelques minutes à se mettre à jour")
+
+        await ctx.respond(embed=embed, ephemeral=True)
+
 
 def setup(bot):
     bot.add_cog(MemberCounterCog(bot))
