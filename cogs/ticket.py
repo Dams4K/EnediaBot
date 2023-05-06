@@ -2,7 +2,7 @@ from discord import *
 from discord.ui import *
 from discord.abc import GuildChannel
 from data_class import TicketConfig
-from utils.bot_embeds import InformativeEmbed
+from utils.bot_embeds import InformativeEmbed, SucceedEmbed, DangerEmbed
 
 class CloseTicketView(View):
     def __init__(self):
@@ -41,39 +41,63 @@ class CreateTicketView(View):
 
         await channel.send(f"{interaction.user.mention} voilà votre ticket", embed=embed, view=CloseTicketView())
 
-        await interaction.response.send_message(ticket_config.message_response, ephemeral=True)
+        await interaction.response.send_message(ticket_config.get_message_response(channel), ephemeral=True)
 
 class TicketCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
     ticket = SlashCommandGroup("ticket", default_member_permissions=Permissions(administrator=True), guild_only=True)
-    message = ticket.create_subgroup("message")
-    t_set = ticket.create_subgroup("set")
+    create_message = ticket.create_subgroup("create_message")
+
+    category = ticket.create_subgroup("category")
 
     @Cog.listener()
     async def on_ready(self):
         self.bot.add_view(CreateTicketView())
         self.bot.add_view(CloseTicketView())
 
-    @message.command(name="send")
+    def get_creation_message(self, ticket_config):
+        return InformativeEmbed(title=ticket_config.message_title, description=ticket_config.message_description)
+
+    @create_message.command(name="send")
     @option("channel", type=TextChannel, required=False)
-    async def message_send(self, ctx, channel):
+    async def create_message_send(self, ctx, channel):
         if channel == None:
             channel = ctx.channel
-        
-        title = ctx.ticket_config.message_title
-        description = ctx.ticket_config.message_description
 
-        embed = Embed(title=title, description=description, colour=Colour.blurple())
-
-        await channel.send(embed=embed, view=CreateTicketView(ctx.ticket_config.message_button_label))
+        await channel.send(embed=self.get_creation_message(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.message_button_label))
         await ctx.respond("Message envoyé", ephemeral=True)
 
-    @t_set.command(name="category")
+    @create_message.command(name="view")
+    async def create_message_view(self, ctx):
+        await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.message_button_label), ephemeral=True)
+
+    @create_message.command(name="set_title")
+    @option("title", type=str, max_length=128)
+    async def cm_set_title(self, ctx, title: str):
+        ctx.ticket_config.set_message_title(title)
+
+        embed = SucceedEmbed(title="Titre changé", description="Le titre du message utilisé pour ouvrir un ticket a été changé")
+        await ctx.respond(embed=embed)
+        await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), ephemeral=True)
+    
+    @create_message.command(name="set_description")
+    @option("description", type=str, max_length=128)
+    async def cm_set_description(self, ctx, description: str):
+        ctx.ticket_config.set_message_description(description)
+
+        embed = SucceedEmbed(title="Description changé", description="La description du message utilisé pour ouvrir un ticket a été changé")
+        await ctx.respond(embed=embed)
+        await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), ephemeral=True)
+
+    @category.command(name="set")
     @option("category", type=GuildChannel, channel_types=[ChannelType.category])
     async def set_category(self, ctx, category):
         ctx.ticket_config.set_category(category)
+
+        embed = SucceedEmbed(title="Catégorie redéfinie", description=f"Les salons seront créé dans la catégorie {category.mention}")
+        await ctx.respond(embed=embed)
 
 
 def setup(bot):

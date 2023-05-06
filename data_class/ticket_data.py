@@ -9,7 +9,7 @@ class TicketConfig(Saveable):
         self.message_title = "Créer un Ticket"
         self.message_description = "Créer un ticket pour pouvoir parler en privé avec le staff du serveur"
         self.message_button_label = "Créer un Ticket"
-        self.message_response = "Ticket créé"
+        self.message_response = "Ticket créé: {channel.mention}"
 
         self.ticket_channel_name = "ticket-{username}"
         self.ticket_category_id = None
@@ -43,6 +43,13 @@ class TicketConfig(Saveable):
     @Saveable.update()
     def set_category(self, category: discord.CategoryChannel):
         self.ticket_category_id = category.id
+
+    @Saveable.update()
+    def set_message_response(self, value):
+        self.message_response = value
+
+    def get_message_response(self, channel):
+        return self.message_response.format(channel=channel)
 
     async def fetch_category_channel(self):
         return await self._guild.fetch_channel(self.ticket_category_id)
