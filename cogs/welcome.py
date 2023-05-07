@@ -1,3 +1,4 @@
+import aiohttp
 import io
 import math
 from discord import *
@@ -134,6 +135,28 @@ class WelcomeCog(Cog):
         ctx.welcome_config.set_image_text_pos(x, y)
         if file := await self.get_welcome_file(ctx.author, ctx.welcome_config):
             await ctx.respond(ctx.welcome_config.get_message(ctx.author), file=file)
+
+    @image.command(name="upload")
+    async def image_upload(self, ctx):
+        await ctx.respond("Envoi l'image que tu veux utiliser")
+
+        def has_file(m: Message):
+            return m.author == ctx.author and len(m.attachments) > 0
+
+        try:
+            image_message: Message = await self.bot.wait_for("message", check=has_file, timeout=30)
+        except TimeoutError:
+            return await ctx.respond("timeout")
+
+        attachments = image_message.attachments
+        if images := [attachment for attachment in attachments if "image" in attachment.content_type]:
+            image = images[0]
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(image.url) as response:
+                    if response.status != 200:
+                        await image_message.reply(f"Un problème a eu lieu `Error {response.status}`")
+                    ctx.welcome_config.upload_background(await response.read(), image.content_type.split("/")[1])
 
 
 def setup(bot):

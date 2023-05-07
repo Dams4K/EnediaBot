@@ -94,6 +94,19 @@ class WelcomeConfig(Saveable):
     def set_image_text_pos(self, x: int, y: int) -> None:
         self.image_text_pos = [x, y]
 
+    def upload_background(self, img_bytes, img_format):
+        folder = References.get_guild_folder(str(self._guild.id))
+        file_path = os.path.join(folder, f"background")
+        with open(file_path, mode="wb") as f:
+            f.write(img_bytes)
+
+    def get_background_path(self):
+        folder = References.get_guild_folder(str(self._guild.id))
+        file_path = os.path.join(folder, f"background")
+        if not os.path.exists(file_path):
+            file_path = "assets/images/cropped_background2.png"
+        return file_path
+
 
     def get_avatar_area(self):
         return self.avatar_pos + [self.avatar_pos[0] + self.avatar_size, self.avatar_pos[1] + self.avatar_size]
@@ -146,7 +159,7 @@ class WelcomeConfig(Saveable):
         return result
 
     async def get_image(self, member):
-        background = Image.open("assets/images/cropped_background2.png")
+        background = Image.open(self.get_background_path())
         foreground = Image.new("RGB", background.size, color="#1f2025")
 
         mask = Image.new("L", background.size, 0)
