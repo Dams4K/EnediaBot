@@ -162,19 +162,19 @@ class WelcomeConfig(Saveable):
         background = Image.open(self.get_background_path())
         foreground = Image.new("RGB", background.size, color="#1f2025")
 
-        mask = Image.new("L", background.size, 0)
+        b_mask = Image.new("L", background.size, 0)
 
         # Draw background gradient
-        mask_draw = ImageDraw.Draw(mask)
-        mask_draw.rectangle((0, 0, background.size[0], background.size[1]-background.size[1]/3), fill="white")
-        mask = mask.filter(ImageFilter.GaussianBlur(128))
+        b_mask_draw = ImageDraw.Draw(b_mask)
+        b_mask_draw.rectangle((0, 0, background.size[0], background.size[1]-background.size[1]/3), fill="white")
+        b_mask = b_mask.filter(ImageFilter.GaussianBlur(128))
 
         # Draw avatar hole
-        mask_draw = ImageDraw.Draw(mask)
-        mask_draw.ellipse(self.get_avatar_area(), fill="black")
-        mask = mask.filter(ImageFilter.GaussianBlur(2))
+        b_mask_draw = ImageDraw.Draw(b_mask)
+        b_mask_draw.ellipse(self.get_avatar_area(), fill="black")
+        # b_mask = b_mask.filter(ImageFilter.GaussianBlur(2))
 
-        result = Image.composite(foreground, background, mask)
+        result = Image.composite(foreground, background, b_mask)
 
         # Get member's avatar
         member_avatar = member.display_avatar.with_size(self.get_ceil_power2_size(self.avatar_size))
@@ -191,7 +191,7 @@ class WelcomeConfig(Saveable):
 
         # Add avatar image
         result.paste(avatar_image, self.get_avatar_area(), avatar_mask)
-
+        result.show()
         # Add text
         font = ImageFont.truetype("assets/font/Roboto-Medium.ttf", self.font_size)
         text = self.fit_text_in(self.get_image_text(member), result.size[0] - self.avatar_size - 48 - 24, font)

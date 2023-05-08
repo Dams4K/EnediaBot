@@ -110,7 +110,7 @@ class CaptchaCog(Cog):
         channel = message.channel
         captcha_channel = await captcha_config.fetch_channel()
 
-        if channel.id != captcha_channel.id: # Message sent on another channel
+        if captcha_channel is None or channel.id != captcha_channel.id: # Message sent on another channel
             return
         
         author_captcha = captcha_config.get_member_captcha(message.author.id)

@@ -132,6 +132,9 @@ class CaptchaConfig(Saveable):
         -------
             discord.TextChannel | None
         """
+        if self.channel_id is None:
+            return
+
         try:
             return await self._guild.fetch_channel(self.channel_id)
         except discord.NotFound:

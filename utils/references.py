@@ -12,8 +12,7 @@ class _References:
             with open(self.BOT_PATH, "w") as f:
                 data = {
                     "bot_token": input("Bot token > "),
-                    "cogs_folder": input("Cogs folder > "),
-                    "logs_folder": input("Logs folder > "),
+                    "cogs_folder": input("Cogs folder > ")
                 }
 
                 json.dump(data, f, indent=4)

@@ -64,6 +64,8 @@ class WelcomeCog(Cog):
 
     @welcome.command(name="show")
     async def welcome_show(self, ctx):
+        await ctx.defer(ephemeral=True)
+
         if file := await self.get_welcome_file(ctx.author, ctx.welcome_config):
             await ctx.respond(ctx.welcome_config.get_message(ctx.author), file=file)
         else:
