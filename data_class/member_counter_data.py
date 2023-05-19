@@ -1,7 +1,9 @@
 import discord
 from discord.enums import Status as DiscordStatus
+
 from ddm import *
 from utils.references import References
+
 
 class ChannelFormatter(dict):
     def __missing__(self, key):

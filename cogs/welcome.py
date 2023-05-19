@@ -1,11 +1,14 @@
-import aiohttp
 import io
 import math
+
+import aiohttp
 from discord import *
 from discord.abc import GuildChannel
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
 from data_class import WelcomeConfig
 from utils.bot_embeds import *
+
 
 class WelcomePositiveEmbed(Embed):
     def __init__(self, welcome_config, *args, **kwargs):

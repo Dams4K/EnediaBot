@@ -1,8 +1,10 @@
 from discord import *
-from discord.ui import *
 from discord.abc import GuildChannel
+from discord.ui import *
+
 from data_class import TicketConfig
-from utils.bot_embeds import InformativeEmbed, SucceedEmbed, DangerEmbed
+from utils.bot_embeds import DangerEmbed, InformativeEmbed, SucceedEmbed
+
 
 class CloseTicketView(View):
     def __init__(self):

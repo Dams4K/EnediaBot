@@ -1,6 +1,9 @@
 import os
+
 import discord
+
 from utils.bot_contexts import BotApplicationContext
+
 
 class EnediaBot(discord.Bot):
     async def on_ready(self):

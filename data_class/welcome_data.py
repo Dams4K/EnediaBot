@@ -1,9 +1,12 @@
-import discord
 import io
 import math
+
+import discord
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
 from ddm import *
 from utils.references import References
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
 
 class WelcomeConfig(Saveable):
     def __init__(self, guild):

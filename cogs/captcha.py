@@ -1,12 +1,15 @@
-import io
 import asyncio
+import io
+from random import choice
+from string import ascii_uppercase, digits
+
+from captcha.image import ImageCaptcha
 from discord import *
 from discord.abc import GuildChannel
-from captcha.image import ImageCaptcha
-from string import ascii_uppercase, digits
-from random import choice
+
 from data_class import CaptchaConfig, MemberCaptcha
 from utils.bot_embeds import *
+
 
 class CaptchaPositiveEmbed(Embed):
     def __init__(self, captcha_config, *args, **kwargs):

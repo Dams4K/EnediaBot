@@ -1,5 +1,7 @@
 from discord.commands.context import ApplicationContext
+
 from data_class import *
+
 
 class BotApplicationContext(ApplicationContext):
     def __init__(self, *args, **kwargs):

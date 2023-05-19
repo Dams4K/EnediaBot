@@ -1,4 +1,5 @@
 import discord
+
 from bot import EnediaBot
 from utils.references import References
 

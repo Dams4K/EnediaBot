@@ -1,6 +1,8 @@
 from discord import *
 from discord.enums import Status as DiscordStatus
+
 from utils.bot_embeds import InformativeEmbed
+
 
 class GlobalCog(Cog):
     STATUS_EMOJIS = {

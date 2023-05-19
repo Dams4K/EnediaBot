@@ -1,6 +1,8 @@
 import discord
+
 from ddm import *
 from utils.references import References
+
 
 class TicketConfig(Saveable):
     def __init__(self, guild):

@@ -1,4 +1,5 @@
-from discord import Embed, Colour
+from discord import Colour, Embed
+
 
 class SucceedEmbed(Embed):
     def __init__(self, **kwargs):
