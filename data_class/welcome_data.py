@@ -94,15 +94,15 @@ class WelcomeConfig(Saveable):
     def set_image_text_pos(self, x: int, y: int) -> None:
         self.image_text_pos = [x, y]
 
-    def upload_background(self, img_bytes, img_format):
+    async def upload_background(self, attachment):
         folder = References.get_guild_folder(str(self._guild.id))
-        file_path = os.path.join(folder, f"background")
+        file_path = os.path.join(folder, f"background.png")
         with open(file_path, mode="wb") as f:
-            f.write(img_bytes)
+            await attachment.save(f)
 
     def get_background_path(self):
         folder = References.get_guild_folder(str(self._guild.id))
-        file_path = os.path.join(folder, f"background")
+        file_path = os.path.join(folder, f"background.png")
         if not os.path.exists(file_path):
             file_path = "assets/images/cropped_background2.png"
         return file_path
@@ -191,7 +191,7 @@ class WelcomeConfig(Saveable):
 
         # Add avatar image
         result.paste(avatar_image, self.get_avatar_area(), avatar_mask)
-        result.show()
+        
         # Add text
         font = ImageFont.truetype("assets/font/Roboto-Medium.ttf", self.font_size)
         text = self.fit_text_in(self.get_image_text(member), result.size[0] - self.avatar_size - 48 - 24, font)

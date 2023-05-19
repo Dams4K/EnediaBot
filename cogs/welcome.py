@@ -194,26 +194,16 @@ class WelcomeCog(Cog):
         description="Import a background image that will be used by the bot",
         description_localizations={"fr": "Importe une image de fond qui sera utilisée par le robot"}
     )
-    async def image_import(self, ctx):
-        await ctx.respond("Envoi l'image que tu veux utiliser")
-
-        def has_file(m: Message):
-            return m.author == ctx.author and len(m.attachments) > 0
-
-        try:
-            image_message: Message = await self.bot.wait_for("message", check=has_file, timeout=30)
-        except TimeoutError:
-            return await ctx.respond("timeout")
-
-        attachments = image_message.attachments
-        if images := [attachment for attachment in attachments if "image" in attachment.content_type]:
-            image = images[0]
-
-            async with aiohttp.ClientSession() as session:
-                async with session.get(image.url) as response:
-                    if response.status != 200:
-                        await image_message.reply(f"Un problème a eu lieu `Error {response.status}`")
-                    ctx.welcome_config.upload_background(await response.read(), image.content_type.split("/")[1])
+    @option("image", type=Attachment, required=True)
+    async def image_import(self, ctx, image):
+        await ctx.welcome_config.upload_background(image)
+        if file := await self.get_welcome_file(ctx.author, ctx.welcome_config):
+            embed = SucceedEmbed(title="Image importé avec succès", description="Résultat :")
+            embed.set_image(url=f"attachment://{file.filename}")
+            await ctx.respond(embed=embed, file=file)
+        else:
+            embed = DangerEmbed(title="Erreur", description="Un problème est survenu")
+            await ctx.respond(embed=embed)
 
 
 def setup(bot):
