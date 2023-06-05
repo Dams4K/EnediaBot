@@ -146,22 +146,37 @@ class CaptchaCog(Cog):
                 await message.author.remove_roles(unverified_role)
 
 
-    captcha = SlashCommandGroup("captcha", default_member_permissions=Permissions(administrator=True), guild_only=True)
-    c_set = captcha.create_subgroup("set")
+    captcha = SlashCommandGroup("captcha", name_localizations={"fr": "captcha"}, default_member_permissions=Permissions(administrator=True), guild_only=True)
+    c_set = captcha.create_subgroup("set", name_localizations={"fr": "définir"})
 
-    @captcha.command(name="enable")
+    @captcha.command(
+        name="enable",
+        name_localizations={"fr": "activer"},
+        description="Activate captcha",
+        description_localizations={"fr": "Active le captcha"}
+    )
     async def captcha_enable(self, ctx):
         ctx.captcha_config.enable()
         embed = SucceedEmbed(title="Captcha activé", description="Le captcha est désormais activé")
         await ctx.respond(embed=embed)
 
-    @captcha.command(name="disable")
+    @captcha.command(
+        name="disable",
+        name_localizations={"fr": "désactiver"},
+        description="Disable captcha",
+        description_localizations={"fr": "Désactive le captcha"}
+    )
     async def captcha_disable(self, ctx):
         ctx.captcha_config.disable()
         embed = DangerEmbed(title="Captcha désactivé", description="Le captcha est désormais désactivé")
         await ctx.respond(embed=embed)
 
-    @c_set.command(name="message")
+    @c_set.command(
+        name="message",
+        name_localizations={"fr": "message"},
+        description="Message to send",
+        description_localizations={"fr": "Message à envoyer"}
+    )
     @option("message", type=str, max_length=2048)
     async def set_message(self, ctx, message: str):
         ctx.captcha_config.set_message(message)
@@ -172,19 +187,29 @@ class CaptchaCog(Cog):
 
         await ctx.respond(embed=embed)
 
-    @c_set.command(name="channel")
-    @option("channel", type=GuildChannel, channel_types=[ChannelType.text])
+    @c_set.command(
+        name="channel",
+        name_localizations={"fr": "salon"},
+        description="Channel where the captcha will be performed",
+        description_localizations={"fr": "Salon où le captcha sera effectué"}
+    )
+    @option("channel", name_localizations={"fr": "salon"}, type=GuildChannel, channel_types=[ChannelType.text])
     async def set_channel(self, ctx, channel: TextChannel):
         ctx.captcha_config.set_channel(channel)
         embed = CaptchaPositiveEmbed(ctx.captcha_config)
         
         embed.title = "Changement effectué"
-        embed.description = f"Le salon du où le captcha sera effectué est maintenant {channel.mention}"
+        embed.description = f"Le salon où le captcha sera effectué est maintenant {channel.mention}"
 
         await ctx.respond(embed=embed)
 
-    @c_set.command(name="size")
-    @option("size", type=int)
+    @c_set.command(
+        name="size",
+        name_localizations={"fr": "taille"},
+        description="Size of the distorded text generated",
+        description_localizations={"fr": "Taille du texte distordu généré"}
+    )
+    @option("size", name_localizations={"fr": "taille"}, type=int)
     async def set_size(self, ctx, size: int):
         ctx.captcha_config.set_size(size)
         embed = CaptchaPositiveEmbed(ctx.captcha_config)
@@ -194,8 +219,13 @@ class CaptchaCog(Cog):
 
         await ctx.respond(embed=embed)
 
-    @c_set.command(name="unverified_role")
-    @option("role", type=Role)
+    @c_set.command(
+        name="unverified_role",
+        name_localizations={"fr": "rôle_non_vérifié"},
+        description="Role given to the member who hasn't validate the captcha",
+        description_localizations={"fr": "Rôle attribué au membre qui n'a pas validé le captcha"}
+    )
+    @option("role", name_localizations={"fr": "rôle"}, type=Role)
     async def set_unverified_role(self, ctx, role: Role):
         ctx.captcha_config.set_unverified_role(role)
         embed = CaptchaPositiveEmbed(ctx.captcha_config)
@@ -205,8 +235,13 @@ class CaptchaCog(Cog):
 
         await ctx.respond(embed=embed)
     
-    @c_set.command(name="verified_role")
-    @option("role", type=Role)
+    @c_set.command(
+        name="verified_role",
+        name_localizations={"fr": "rôle_vérifié"},
+        description="Role given to the member who has validate the captcha",
+        description_localizations={"fr": "Rôle attribué au membre qui a validé le captcha"}
+    )
+    @option("role", name_localizations={"fr": "rôle"}, type=Role)
     async def set_verified_role(self, ctx, role: Role):
         ctx.captcha_config.set_verified_role(role)
         embed = CaptchaPositiveEmbed(ctx.captcha_config)
