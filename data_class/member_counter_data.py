@@ -18,19 +18,56 @@ class MemberCounter(Saveable):
         super().__init__(References.get_guild_folder(f"{self._guild.id}/member_counter.json"))
     
     @Saveable.update()
-    def add_channel(self, channel, name):
+    def link_channel(self, channel: discord.abc.GuildChannel, name: str) -> None:
+        """Add member counter channel
+
+        Parameters
+        ----------
+            channel: discord.abc.GuildChannel
+            name: str
+        
+        Returns
+        -------
+            None
+        """
         self.channels[str(channel.id)] = name
     
     @Saveable.update()
-    def remove_channel(self, channel):
+    def unlink_channel(self, channel: discord.abc.GuildChannel) -> discord.abc.GuildChannel:
+        """Remove linked channel
+        
+        Parameters
+        ----------
+            channel: discord.abc.GuildChannel
+        
+        Returns
+        -------
+            discord.abc.GuildChannel | None
+        """
         channel_id = str(channel.id)
         if channel_id in self.channels:
             return self.channels.pop(channel_id)
 
-    async def fetch_channels(self):
+    async def fetch_channels(self) -> list:
+        """Get the list of all linked channels
+
+        Returns
+        -------
+            list[discord.abc.GuildChannel]
+        """
         return [await self._guild.fetch_channel(int(channel_id)) for channel_id in self.channels]
 
-    def get_channel_name(self, channel_id):        
+    def get_channel_name(self, channel_id: int) -> str:
+        """Get formatted name of the channel
+
+        Parameters
+        ----------
+            channel_id: int
+        
+        Returns
+        -------
+            str | None
+        """
         if channel_name := self.channels.get(str(channel_id)):
             member_count = self._guild.member_count
             connected_members = 0
@@ -71,11 +108,27 @@ class MemberCounter(Saveable):
                 bot_members=bot_members
             )
 
-    async def update_channels(self):
+    async def update_channels(self) -> None:
+        """Update the name of all linked channels
+
+        Returns
+        -------
+            None
+        """
         for channel_id in self.channels.keys():
             await self.update_channel(channel_id)
         
-    async def update_channel(self, channel_id):
+    async def update_channel(self, channel_id: int) -> None:
+        """Update the name of the channel
+
+        Parameters
+        ----------
+            channel_id: int
+
+        Returns
+        -------
+            None
+        """
         channel_id = str(channel_id)
 
         channel = await self._guild.fetch_channel(int(channel_id))

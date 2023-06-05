@@ -8,8 +8,8 @@ class TicketConfig(Saveable):
     def __init__(self, guild):
         self._guild = guild
 
-        self.message_title = "Créer un Ticket"
-        self.message_description = "Créer un ticket pour pouvoir parler en privé avec le staff du serveur"
+        self.creation_message_title = "Créer un Ticket"
+        self.creation_message_description = "Créer un ticket pour pouvoir parler en privé avec le staff du serveur"
         self.message_button_label = "Créer un Ticket"
         self.message_response = "Ticket créé: {channel.mention}"
 
@@ -31,27 +31,26 @@ class TicketConfig(Saveable):
         return await self._guild.create_text_channel(channel_name, reason=reason, category=category, overwrites=overwrites) 
 
     @Saveable.update()
-    def set_message_title(self, value):
-        self.message_title = value
-    
-    @Saveable.update()
-    def set_message_description(self, value):
-        self.message_description = value
+    def set_creation_message(self, title: str = None, description: str = None) -> None:
+        if title:
+            self.creation_message_title = title
+        if description:
+            self.creation_message_description = description       
 
     @Saveable.update()
-    def set_message_button_label(self, value):
+    def set_message_button_label(self, value) -> None:
         self.message_button_label = value
     
     @Saveable.update()
-    def set_category(self, category: discord.CategoryChannel):
+    def set_category(self, category: discord.CategoryChannel) -> None:
         self.ticket_category_id = category.id
 
     @Saveable.update()
-    def set_message_response(self, value):
+    def set_message_response(self, value) -> None:
         self.message_response = value
 
-    def get_message_response(self, channel):
+    def get_message_response(self, channel) -> str:
         return self.message_response.format(channel=channel)
 
-    async def fetch_category_channel(self):
+    async def fetch_category_channel(self) -> discord.abc.GuildChannel:
         return await self._guild.fetch_channel(self.ticket_category_id)

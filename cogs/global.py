@@ -1,8 +1,9 @@
+import aiohttp
 from discord import *
 from discord.enums import Status as DiscordStatus
 
 from utils.bot_embeds import InformativeEmbed
-
+from utils.references import References
 
 class GlobalCog(Cog):
     STATUS_EMOJIS = {
@@ -27,7 +28,7 @@ class GlobalCog(Cog):
 
         await ctx.respond(embed=self.userinfo_embed(member))
 
-    def userinfo_embed(self, member) -> Embed:
+    def userinfo_embed(self, member: Member) -> Embed:
         embed = InformativeEmbed(title=f"{member} - {GlobalCog.STATUS_EMOJIS.get(member.status, GlobalCog.STATUS_EMOJIS[DiscordStatus.online])}")
 
         created_at = round(member.created_at.timestamp())

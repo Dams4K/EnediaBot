@@ -56,6 +56,10 @@ class CaptchaConfig(Saveable):
         Parameters
         ----------
             size: int
+
+        Returns
+        -------
+            None
         """
         self.size = size
 
@@ -66,7 +70,11 @@ class CaptchaConfig(Saveable):
         Parameters
         ----------
             message: str
-                max size: 2048
+                max length: 2048
+
+        Returns
+        -------
+            None
         """
         self.message = message[:2048]
 
@@ -86,6 +94,10 @@ class CaptchaConfig(Saveable):
         Parameters
         ----------
             role: discord.Role
+
+        Returns
+        -------
+            None
         """
         self.unverified_role_id = role.id
     
@@ -105,6 +117,10 @@ class CaptchaConfig(Saveable):
         Parameters
         ----------
             role: discord.Role
+
+        Returns
+        -------
+            None
         """
         self.verified_role_id = role.id
     
@@ -124,6 +140,10 @@ class CaptchaConfig(Saveable):
         Parameters
         ----------
             channel: discord.TextChannel
+
+        Returns
+        -------
+            None
         """
         self.channel_id = channel.id
 
@@ -153,6 +173,10 @@ class CaptchaConfig(Saveable):
                 The member to whom the MemberCaptcha instance will be assigned
             member_captcha: MemberCaptcha
                 The MemberCaptcha instance
+
+        Returns
+        -------
+            None
         """
         self.member_captchas[str(member.id)] = member_captcha
 

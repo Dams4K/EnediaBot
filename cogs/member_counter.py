@@ -45,7 +45,7 @@ class MemberCounterCog(Cog):
     @option("channel", type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
     @option("name", type=str)
     async def member_counter_link(self, ctx, channel, name: str):
-        ctx.member_counter.add_channel(channel, name)
+        ctx.member_counter.link_channel(channel, name)
 
         embed = SucceedEmbed(title="Salon relié")
         embed.description = f"Le salon {channel.mention} comptera les membres, son nom sera mis-à-jour dans les minutes qui suivent et devrait ressembler à ça:\n\n{ctx.member_counter.get_channel_name(channel.id)}"
@@ -55,7 +55,7 @@ class MemberCounterCog(Cog):
     @member_counter.command(name="unlink")
     @option("channel", type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
     async def member_counter_unlink(self, ctx, channel):
-        ctx.member_counter.remove_channel(channel)
+        ctx.member_counter.unlink_channel(channel)
 
         embed = DangerEmbed(title="Salon dissocié")
         embed.description = f"Le salon {channel.mention} ne comptera plus les membres"

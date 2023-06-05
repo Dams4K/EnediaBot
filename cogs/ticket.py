@@ -75,21 +75,22 @@ class TicketCog(Cog):
     async def create_message_view(self, ctx):
         await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.message_button_label), ephemeral=True)
 
-    @create_message.command(name="set_title")
-    @option("title", type=str, max_length=128)
-    async def cm_set_title(self, ctx, title: str):
-        ctx.ticket_config.set_message_title(title)
+    @create_message.command(name="set_message")
+    @option("title", type=str, max_length=128, default=None)
+    @option("description", type=str, max_length=1024, default=None)
+    async def cm_set_message(self, ctx, title: str = None, description: str = None) -> None:
+        ctx.ticket_config.set_creation_message(title, description)
 
-        embed = SucceedEmbed(title="Titre changé", description="Le titre du message utilisé pour ouvrir un ticket a été changé")
-        await ctx.respond(embed=embed)
-        await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), ephemeral=True)
-    
-    @create_message.command(name="set_description")
-    @option("description", type=str, max_length=128)
-    async def cm_set_description(self, ctx, description: str):
-        ctx.ticket_config.set_message_description(description)
+        embed = SucceedEmbed(title="Message de création de ticket")
+        embed_description = ""
+        if title:
+            embed_description += "Titre modifié\n"
+        if description:
+            embed_description += "Descriptions modifié\n"
+        
+        if embed_description == "":
+            embed_description = "Rien n'a été modifié"
 
-        embed = SucceedEmbed(title="Description changé", description="La description du message utilisé pour ouvrir un ticket a été changé")
         await ctx.respond(embed=embed)
         await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), ephemeral=True)
 
