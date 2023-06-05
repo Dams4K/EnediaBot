@@ -201,6 +201,7 @@ class WelcomeCog(Cog):
     async def image_import(self, ctx, image):
         await ctx.welcome_config.upload_background(image)
         if file := await self.get_welcome_file(ctx.author, ctx.welcome_config):
+            await ctx.defer()
             embed = SucceedEmbed(title="Image importé avec succès", description="Résultat :")
             embed.set_image(url=f"attachment://{file.filename}")
             await ctx.respond(embed=embed, file=file)

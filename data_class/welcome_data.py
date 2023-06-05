@@ -107,7 +107,7 @@ class WelcomeConfig(Saveable):
         folder = References.get_guild_folder(str(self._guild.id))
         file_path = os.path.join(folder, f"background.png")
         if not os.path.exists(file_path):
-            file_path = "assets/images/cropped_background2.png"
+            file_path = "assets/images/default_background.png"
         return file_path
 
 
