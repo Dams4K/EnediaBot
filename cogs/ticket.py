@@ -60,7 +60,7 @@ class TicketCog(Cog):
         self.bot.add_view(CloseTicketView())
 
     def get_creation_message(self, ticket_config):
-        return InformativeEmbed(title=ticket_config.message_title, description=ticket_config.message_description)
+        return InformativeEmbed(title=ticket_config.creation_message_title, description=ticket_config.creation_message_description)
 
     @create_message.command(name="send")
     @option("channel", type=TextChannel, required=False)
@@ -75,7 +75,7 @@ class TicketCog(Cog):
     async def create_message_view(self, ctx):
         await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.message_button_label), ephemeral=True)
 
-    @create_message.command(name="set_message")
+    @create_message.command(name="set")
     @option("title", type=str, max_length=128, default=None)
     @option("description", type=str, max_length=1024, default=None)
     async def cm_set_message(self, ctx, title: str = None, description: str = None) -> None:
@@ -90,6 +90,8 @@ class TicketCog(Cog):
         
         if embed_description == "":
             embed_description = "Rien n'a été modifié"
+
+        embed.description = embed_description
 
         await ctx.respond(embed=embed)
         await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), ephemeral=True)
