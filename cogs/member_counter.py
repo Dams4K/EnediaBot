@@ -39,11 +39,16 @@ class MemberCounterCog(Cog):
         guilds = after.mutual_guilds
         await self.update_channels(guilds)
     
-    member_counter = SlashCommandGroup("member_counter", default_member_permissions=Permissions(administrator=True), guild_only=True)
+    member_counter = SlashCommandGroup("member_counter", name_localizations={"fr": "compteur_membres"}, default_member_permissions=Permissions(administrator=True), guild_only=True)
 
-    @member_counter.command(name="link")
-    @option("channel", type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
-    @option("name", type=str)
+    @member_counter.command(
+        name="link",
+        name_localizations={"fr": "lier"},
+        description="Link a channel to the updater",
+        description_localizations={"fr": "Lier un salon à l'outil de mise à jour"}
+    )
+    @option("channel", name_localizations={"fr": "salon"}, type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
+    @option("name", name_localizations={"fr": "nom"}, type=str)
     async def member_counter_link(self, ctx, channel, name: str):
         ctx.member_counter.link_channel(channel, name)
 
@@ -52,8 +57,13 @@ class MemberCounterCog(Cog):
 
         await ctx.respond(embed=embed)
     
-    @member_counter.command(name="unlink")
-    @option("channel", type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
+    @member_counter.command(
+        name="unlink",
+        name_localizations={"fr": "délier"},
+        description="Unlink a channel",
+        description_localizations={"fr": "Délie un salon"}
+    )
+    @option("channel", name_localizations={"fr": "salon"}, type=GuildChannel, channel_types=[ChannelType.voice, ChannelType.text])
     async def member_counter_unlink(self, ctx, channel):
         ctx.member_counter.unlink_channel(channel)
 
@@ -62,7 +72,7 @@ class MemberCounterCog(Cog):
 
         await ctx.respond(embed=embed)
 
-    @member_counter.command(name="help")
+    @member_counter.command(name="help", name_localizations={"fr": "aide"})
     async def member_counter_help(self, ctx):
         embed = InformativeEmbed(title="Formatage")
         description = """Liste des *placeholders* existants
