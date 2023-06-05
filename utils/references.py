@@ -27,7 +27,7 @@ class _References:
             self.COGS_FOLDER = data.get("cogs_folder", "cogs")
             self.LOGS_FOLDER = os.path.join(data.get("logs_folder", "datas/logs"), 'discord.log')
 
-            self.DEBUG_GUILDS = data.get("debug_guilds", [])
+            self.DEBUG_GUILDS = data.get("debug_guilds", None)
 
             self.GUILDS_FOLDER = "datas/guilds/"
     

@@ -56,21 +56,26 @@ class CaptchaCog(Cog):
         return image_captcha.generate_image(text)
 
     @Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: Member) -> None:
         guild = member.guild
         captcha_config = CaptchaConfig(guild)
 
         if not captcha_config.enabled: # The captcha is disabled
             return
 
-        channel = await captcha_config.fetch_channel()
-        if channel is None: # The channel doesn't exist
-            return
-
         # Add the unverified role if it exists
         unverified_role = captcha_config.get_unverified_role()
         if not unverified_role in [None, guild.default_role]:
             await member.add_roles(unverified_role)
+
+
+        channel: TextChannel = await captcha_config.fetch_channel()
+        if channel is None: # The channel doesn't exist
+            print(f"WARNING - {channel} do not exist")
+            return
+        if not member in channel.members: # The member have no access to the channel
+            print(f"WARNING - {member} has no access to the captcha channel, no captcha message will be sent")
+            return
 
         # Send image
         text = self.generate_captcha_text(captcha_config.size)
