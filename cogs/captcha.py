@@ -85,7 +85,7 @@ class CaptchaCog(Cog):
             image_binary.seek(0)
 
             file = File(image_binary, filename="captcha.png")
-            embed = InformativeEmbed(title="Captcha", description=captcha_config.get_message(member=member))
+            embed = InformativeEmbed(title="Captcha - Verification", description=captcha_config.get_message(member=member))
             embed.set_image(url=f"attachment://{file.filename}")
 
             msg = await channel.send(embed=embed, file=file)
