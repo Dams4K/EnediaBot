@@ -1,9 +1,6 @@
 import asyncio
 import io
-from random import choice
-from string import ascii_uppercase, digits
 
-from captcha.image import ImageCaptcha
 from discord import *
 from discord.abc import GuildChannel
 
@@ -24,36 +21,6 @@ class CaptchaPositiveEmbed(Embed):
 class CaptchaCog(Cog):
     def __init__(self, bot):
         self.bot = bot
-    
-    def generate_captcha_text(self, size) -> str:
-        """Generate a random sequence of `size` characters
-        
-        Parameters
-        ----------
-            size: int
-                size of the character string
-        
-        Returns
-        -------
-            str
-        """
-        chars = digits + ascii_uppercase
-        return "".join([choice(chars) for _ in range(size)])
-
-    def generate_captcha_image(self, text: str):
-        """Generate a captcha image
-        
-        Parameters
-        ----------
-            text: str
-                text on the image
-        
-        Returns
-        -------
-            PIL.Image
-        """
-        image_captcha = ImageCaptcha(width = 300, height = 100)
-        return image_captcha.generate_image(text)
 
     @Cog.listener()
     async def on_member_join(self, member: Member) -> None:
@@ -69,33 +36,34 @@ class CaptchaCog(Cog):
             await member.add_roles(unverified_role)
 
 
-        channel: TextChannel = await captcha_config.fetch_channel()
-        if channel is None: # The channel doesn't exist
+        try:
+            channel: TextChannel = await captcha_config.fetch_channel()
+        except errors.NotFound:
             print(f"WARNING - {channel} do not exist")
-            return
-        if not member in channel.members: # The member have no access to the channel
-            print(f"WARNING - {member} has no access to the captcha channel, no captcha message will be sent")
-            return
+        else:
+            if not member in channel.members: # The member have no access to the channel
+                print(f"WARNING - {member} has no access to the captcha channel, no captcha message will be sent")
+                return
 
-        # Send image
-        text = self.generate_captcha_text(captcha_config.size)
-        img = self.generate_captcha_image(text)
-        with io.BytesIO() as image_binary:
-            img.save(image_binary, "PNG")
-            image_binary.seek(0)
+            # Send image
+            text = captcha_config.generate_captcha_text()
+            img = captcha_config.generate_captcha_image(text)
+            with io.BytesIO() as image_binary:
+                img.save(image_binary, "PNG")
+                image_binary.seek(0)
 
-            file = File(image_binary, filename="captcha.png")
-            embed = InformativeEmbed(title="Captcha - Verification", description=captcha_config.get_message(member=member))
-            embed.set_image(url=f"attachment://{file.filename}")
+                file = File(image_binary, filename="captcha.png")
+                embed = InformativeEmbed(title="Captcha - Verification", description=captcha_config.get_message(member=member))
+                embed.set_image(url=f"attachment://{file.filename}")
 
-            msg = await channel.send(embed=embed, file=file)
+                msg = await channel.send(embed=embed, file=file)
 
-            # Add member in the members captcha data
-            member_captcha = MemberCaptcha()
-            member_captcha.text = text
-            member_captcha.message_id = msg.id
+                # Add member in the members captcha data
+                member_captcha = MemberCaptcha()
+                member_captcha.text = text
+                member_captcha.message_id = msg.id
 
-            captcha_config.add_member_captcha(member, member_captcha)
+                captcha_config.add_member_captcha(member, member_captcha)
 
     @Cog.listener()
     async def on_raw_member_remove(self, payload):

@@ -43,14 +43,14 @@ class CreateTicketView(View):
 
         await channel.send(f"{interaction.user.mention} voilà votre ticket", embed=embed, view=CloseTicketView())
 
-        await interaction.response.send_message(ticket_config.get_message_response(channel), ephemeral=True)
+        await interaction.response.send_message(ticket_config.get_creation_response(channel), ephemeral=True)
 
 class TicketCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
     ticket = SlashCommandGroup("ticket", default_member_permissions=Permissions(administrator=True), guild_only=True)
-    create_message = ticket.create_subgroup("create_message")
+    create_embed = ticket.create_subgroup("create_embed")
 
     category = ticket.create_subgroup("category")
 
@@ -59,42 +59,39 @@ class TicketCog(Cog):
         self.bot.add_view(CreateTicketView())
         self.bot.add_view(CloseTicketView())
 
-    def get_creation_message(self, ticket_config):
-        return InformativeEmbed(title=ticket_config.creation_message_title, description=ticket_config.creation_message_description)
+    def get_creation_embed(self, ticket_config):
+        return InformativeEmbed(title=ticket_config.creation_embed_title, description=ticket_config.creation_embed_description)
 
-    @create_message.command(name="send")
+    @create_embed.command(name="send")
     @option("channel", type=TextChannel, required=False)
-    async def create_message_send(self, ctx, channel):
+    async def create_embed_send(self, ctx, channel):
         if channel == None:
             channel = ctx.channel
 
-        await channel.send(embed=self.get_creation_message(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.message_button_label))
+        await channel.send(embed=self.get_creation_embed(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.create_button_label))
         await ctx.respond("Message envoyé", ephemeral=True)
 
-    @create_message.command(name="view")
-    async def create_message_view(self, ctx):
-        await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.message_button_label), ephemeral=True)
+    @create_embed.command(name="view")
+    async def create_embed_view(self, ctx):
+        await ctx.respond(embed=self.get_creation_embed(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.create_button_label), ephemeral=True)
 
-    @create_message.command(name="set")
+    @create_embed.command(name="set")
     @option("title", type=str, max_length=128, default=None)
     @option("description", type=str, max_length=1024, default=None)
     async def cm_set_message(self, ctx, title: str = None, description: str = None) -> None:
-        ctx.ticket_config.set_creation_message(title, description)
+        ctx.ticket_config.set_creation_embed(title, description)
 
         embed = SucceedEmbed(title="Message de création de ticket")
-        embed_description = ""
+        embed_description = []
         if title:
-            embed_description += "Titre modifié\n"
+            embed_description.append("Titre modifié")
         if description:
-            embed_description += "Descriptions modifié\n"
+            embed_description.append("Descriptions modifié")
         
-        if embed_description == "":
-            embed_description = "Rien n'a été modifié"
-
-        embed.description = embed_description
+        embed.description = "\n".join(embed_description) or "Rien n'a été modifié"
 
         await ctx.respond(embed=embed)
-        await ctx.respond(embed=self.get_creation_message(ctx.ticket_config), ephemeral=True)
+        await ctx.respond(embed=self.get_creation_embed(ctx.ticket_config), ephemeral=True)
 
     @category.command(name="set")
     @option("category", type=GuildChannel, channel_types=[ChannelType.category])

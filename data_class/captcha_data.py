@@ -1,4 +1,8 @@
+from random import choice
+from string import ascii_uppercase, digits
+
 import discord
+from captcha.image import ImageCaptcha
 
 from ddm import *
 from utils.references import References
@@ -48,6 +52,32 @@ class CaptchaConfig(Saveable):
     def disable(self) -> None:
         """Disable the captcha"""
         self.enabled = False
+
+    def generate_captcha_text(self) -> str:
+        """Generate a random sequence of `size` characters
+        
+        Returns
+        -------
+            str
+        """
+        chars = digits + ascii_uppercase
+        return "".join([choice(chars) for _ in range(self.size)])
+
+    def generate_captcha_image(self, text: str):
+        """Generate a captcha image
+        
+        Parameters
+        ----------
+            text: str
+                text on the image
+        
+        Returns
+        -------
+            PIL.Image
+        """
+        image_captcha = ImageCaptcha(width = 300, height = 100)
+        return image_captcha.generate_image(text)
+    
 
     @Saveable.update()
     def set_size(self, size: int) -> None:
