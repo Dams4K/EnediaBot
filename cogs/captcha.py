@@ -114,8 +114,14 @@ class CaptchaCog(Cog):
                 await message.author.remove_roles(unverified_role)
 
 
-    captcha = SlashCommandGroup("captcha", name_localizations={"fr": "captcha"}, default_member_permissions=Permissions(administrator=True), guild_only=True)
-    c_set = captcha.create_subgroup("set", name_localizations={"fr": "définir"})
+    captcha = SlashCommandGroup(
+        "captcha",
+        name_localizations={"fr": "captcha"},
+        default_member_permissions=Permissions(administrator=True), guild_only=True)
+    
+    c_set = captcha.create_subgroup(
+        "set",
+        name_localizations={"fr": "définir"})
 
     @captcha.command(
         name="enable",
@@ -145,7 +151,7 @@ class CaptchaCog(Cog):
         description="Message to send",
         description_localizations={"fr": "Message à envoyer"}
     )
-    @option("message", type=str, max_length=2048)
+    @option("message", name_localizations={"fr": "message"}, type=str, max_length=2048)
     async def set_message(self, ctx, message: str):
         ctx.captcha_config.set_message(message)
         embed = CaptchaPositiveEmbed(ctx.captcha_config)

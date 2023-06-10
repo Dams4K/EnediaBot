@@ -49,8 +49,13 @@ class TicketCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    ticket = SlashCommandGroup("ticket", default_member_permissions=Permissions(administrator=True), guild_only=True)
-    create_embed = ticket.create_subgroup("create_embed")
+    ticket = SlashCommandGroup("ticket",
+        name_localizations={"fr": "ticket"},
+        default_member_permissions=Permissions(administrator=True), guild_only=True)
+    
+    embed_creation = ticket.create_subgroup(
+        "embed_creation",
+        name_localizations={"fr": "embed_de_création"})
 
     category = ticket.create_subgroup("category")
 
@@ -59,27 +64,42 @@ class TicketCog(Cog):
         self.bot.add_view(CreateTicketView())
         self.bot.add_view(CloseTicketView())
 
-    def get_creation_embed(self, ticket_config):
-        return InformativeEmbed(title=ticket_config.creation_embed_title, description=ticket_config.creation_embed_description)
+    def get_embed_creation(self, ticket_config):
+        return InformativeEmbed(title=ticket_config.embed_creation_title, description=ticket_config.embed_creation_description)
 
-    @create_embed.command(name="send")
-    @option("channel", type=TextChannel, required=False)
-    async def create_embed_send(self, ctx, channel):
+    @embed_creation.command(
+        name="send",
+        name_localizations={"fr": "envoyer"},
+        description="Send ticket creation embed",
+        description_localizations={"fr": "Envoyer l'embed de création de ticket"}
+    )
+    @option("channel", name_localizations={"fr": "salon"}, type=TextChannel, required=False)
+    async def embed_creation_send(self, ctx, channel):
         if channel == None:
             channel = ctx.channel
 
-        await channel.send(embed=self.get_creation_embed(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.create_button_label))
+        await channel.send(embed=self.get_embed_creation(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.create_button_label))
         await ctx.respond("Message envoyé", ephemeral=True)
 
-    @create_embed.command(name="view")
-    async def create_embed_view(self, ctx):
-        await ctx.respond(embed=self.get_creation_embed(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.create_button_label), ephemeral=True)
+    @embed_creation.command(
+        name="see",
+        name_localizations={"fr": "apercevoir"},
+        description="See how the creation embed will looks like, without sending it",
+        description_localizations={"fr": "Regarder à quoi ressemblera l'intégration de la création, sans l'envoyer"}
+    )
+    async def embed_creation_see(self, ctx):
+        await ctx.respond(embed=self.get_embed_creation(ctx.ticket_config), view=CreateTicketView(ctx.ticket_config.create_button_label), ephemeral=True)
 
-    @create_embed.command(name="set")
-    @option("title", type=str, max_length=128, default=None)
-    @option("description", type=str, max_length=1024, default=None)
-    async def cm_set_message(self, ctx, title: str = None, description: str = None) -> None:
-        ctx.ticket_config.set_creation_embed(title, description)
+    @embed_creation.command(
+        name="set",
+        name_localizations={"fr": "définir"},
+        description="Set ticket creation embed",
+        description_localizations={"fr": "Défini l'embed de création de ticket"}
+    )
+    @option("title", name_localizations={"fr": "titre"}, type=str, max_length=128, default=None)
+    @option("description", name_localizations={"fr": "description"}, type=str, max_length=1024, default=None)
+    async def embed_creation_set(self, ctx, title: str = None, description: str = None) -> None:
+        ctx.ticket_config.set_embed_creation(title, description)
 
         embed = SucceedEmbed(title="Message de création de ticket")
         embed_description = []
@@ -91,10 +111,15 @@ class TicketCog(Cog):
         embed.description = "\n".join(embed_description) or "Rien n'a été modifié"
 
         await ctx.respond(embed=embed)
-        await ctx.respond(embed=self.get_creation_embed(ctx.ticket_config), ephemeral=True)
+        await ctx.respond(embed=self.get_embed_creation(ctx.ticket_config), ephemeral=True)
 
-    @category.command(name="set")
-    @option("category", type=GuildChannel, channel_types=[ChannelType.category])
+    @category.command(
+        name="set",
+        name_localizations={"fr": "définir"},
+        description="Set category in which all ticket channels will be created",
+        description_localizations={"fr": "Défini la catégorie dans laquelle tous les salons de tickets seront créés"}
+    )
+    @option("category", name_localizations={"fr": "catégorie"}, type=GuildChannel, channel_types=[ChannelType.category])
     async def set_category(self, ctx, category):
         ctx.ticket_config.set_category(category)
 

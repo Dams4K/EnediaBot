@@ -8,8 +8,8 @@ class TicketConfig(Saveable):
     def __init__(self, guild):
         self._guild = guild
 
-        self.creation_embed_title = "Créer un Ticket"
-        self.creation_embed_description = "Créer un ticket pour pouvoir parler en privé avec le staff du serveur"
+        self.embed_creation_title = "Créer un Ticket"
+        self.embed_creation_description = "Créer un ticket pour pouvoir parler en privé avec le staff du serveur"
         self.create_button_label = "Créer un Ticket"
         self.creation_response = "Ticket créé: {channel.mention}"
 
@@ -41,7 +41,7 @@ class TicketConfig(Saveable):
         return await self._guild.create_text_channel(channel_name, reason=reason, category=category, overwrites=overwrites) 
 
     @Saveable.update()
-    def set_creation_embed(self, title: str = None, description: str = None) -> None:
+    def set_embed_creation(self, title: str = None, description: str = None) -> None:
         """Set title and description of the creation embed
 
         Parameters
@@ -54,9 +54,9 @@ class TicketConfig(Saveable):
             None
         """
         if title:
-            self.creation_embed_title = title
+            self.embed_creation_title = title
         if description:
-            self.creation_embed_description = description       
+            self.embed_creation_description = description       
 
     @Saveable.update()
     def set_create_button_label(self, text: str) -> None:
