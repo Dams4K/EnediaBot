@@ -33,7 +33,7 @@ class MemberCounter(Saveable):
         self.channels[str(channel.id)] = name
     
     @Saveable.update()
-    def unlink_channel(self, channel: discord.abc.GuildChannel) -> discord.abc.GuildChannel:
+    def unlink_channel(self, channel: discord.abc.GuildChannel) -> int:
         """Remove linked channel
         
         Parameters
@@ -42,9 +42,24 @@ class MemberCounter(Saveable):
         
         Returns
         -------
-            discord.abc.GuildChannel | None
+            int | None
         """
         channel_id = str(channel.id)
+        if channel_id in self.channels:
+            return self.channels.pop(channel_id)
+
+    @Saveable.update()
+    def unlink_channel_id(self, channel_id: int) -> int:
+        """Remove linked channel by its id
+        
+        Parameters
+        ----------
+            channel_id: int
+        
+        Returns
+        -------
+            int | None
+        """
         if channel_id in self.channels:
             return self.channels.pop(channel_id)
 
@@ -129,12 +144,13 @@ class MemberCounter(Saveable):
         -------
             None
         """
-        channel_id = str(channel_id)
-
-        channel = await self._guild.fetch_channel(int(channel_id))
-        if channel is None:
-            return
-
-        if channel_name := self.get_channel_name(channel.id):
-            if channel_name != channel.name:
-                await channel.edit(name=channel_name)
+        try:
+            channel = await self._guild.fetch_channel(channel_id)
+        except discord.errors.NotFound:
+            print("ERROR - Channel with id", channel_id, "not found")
+            print("Channel with id", channel_id, "is automatically unlinked")
+            self.unlink_channel_id(channel_id)
+        else:
+            if channel_name := self.get_channel_name(channel.id):
+                if channel_name != channel.name:
+                    await channel.edit(name=channel_name)
