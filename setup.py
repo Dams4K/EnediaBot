@@ -1,7 +1,7 @@
-import sys
-import subprocess
 import json
 import os
+import subprocess
+import sys
 
 packages_installation_done = False
 while not packages_installation_done:
