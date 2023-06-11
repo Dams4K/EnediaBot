@@ -18,10 +18,12 @@ class GlobalCog(Cog):
         self.bot = bot
 
     @user_command(name="User info")
+    @guild_only()
     async def user_userinfo(self, ctx, user: Member):
         await ctx.respond(embed=self.userinfo_embed(user))
     
     @slash_command(name="userinfo")
+    @guild_only()
     @option("member", type=Member, required=False)
     async def slash_userinfo(self, ctx, member: Member = None):
         member = member or ctx.author
