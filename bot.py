@@ -13,7 +13,7 @@ class EnediaBot(discord.Bot):
         print("extensions:", end="")
         print("\n  - ".join([""] + self.extensions_path()))
         
-        await self.change_presence(status=discord.Status.idle)
+        await self.change_presence(status=discord.Status.online, activity=discord.Game(name="play.enedia.fr"))
 
     async def get_application_context(self, interaction, cls = BotApplicationContext):
         return await super().get_application_context(interaction, cls=cls)
